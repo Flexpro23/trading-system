@@ -1,0 +1,4 @@
+holdout-a Mom5d 20250101-20260601 --timeframe-detail 15m
+holdout-b Mom5d 20260601- --timeframe-detail 15m
+holdout-a-fee2x Mom5d 20250101-20260601 --timeframe-detail 15m --fee 0.001
+holdout-a-null Flip1h 20250101-20260601 --timeframe-detail 15m

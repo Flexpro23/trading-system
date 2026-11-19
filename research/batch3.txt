@@ -1,0 +1,4 @@
+is1-btc VwapSnap 20210401-20230101 --timeframe-detail 1m --pairs BTC/USDT:USDT
+is2-btc VwapSnap 20230101-20250101 --timeframe-detail 1m --pairs BTC/USDT:USDT
+is2-btc-fee0 VwapSnap 20230101-20250101 --timeframe-detail 1m --pairs BTC/USDT:USDT --fee 0
+is2-six-nodetail VwapSnap 20230101-20250101

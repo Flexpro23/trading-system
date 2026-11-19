@@ -1,0 +1,38 @@
+is1	OIBase	20211201-20221231	trades 231 / 0.58	PF 1.14	exp 0.27 (0.10)	total 6.14%	DD 12.19%	hold 5 days, 11:28:00	win% 28.1	L/S -9.42% / 15.55%	rejected 1740	err 0
+h1	OILongFlipB	20211201-20230916	trades 311 / 0.48	PF 0.89	exp -0.36 (-0.06)	total -11.34%	DD 22.71%	hold 2 days, 10:34:00	win% 43.7	L/S 	rejected 4	err 0
+h1	OIFlipC	20211201-20230916	trades 325 / 0.5	PF 0.95	exp -0.16 (-0.03)	total -5.33%	DD 18.09%	hold 2 days, 14:15:00	win% 42.8	L/S -13.68% / 8.36%	rejected 0	err 0
+h1	OIFlush	20211201-20230916	trades 314 / 0.48	PF 0.92	exp -0.20 (-0.04)	total -6.29%	DD 13.25%	hold 2 days, 16:54:00	win% 49.4	L/S -3.60% / -2.69%	rejected 66	err 0
+is2	OIBase	20230101-20241231	trades 411 / 0.56	PF 1.57	exp 1.26 (0.41)	total 51.99%	DD 13.87%	hold 5 days, 21:31:00	win% 27.5	L/S 71.08% / -19.09%	rejected 2695	err 0
+h2	OILongFlipB	20230916-20250630	trades 294 / 0.45	PF 1.16	exp 0.57 (0.08)	total 16.73%	DD 13.97%	hold 2 days, 14:20:00	win% 46.6	L/S 	rejected 1	err 0
+h2	OIFlipC	20230916-20250630	trades 312 / 0.48	PF 1.04	exp 0.13 (0.02)	total 4.18%	DD 12.98%	hold 2 days, 13:38:00	win% 47.4	L/S 17.13% / -12.94%	rejected 5	err 0
+h2	OIFlush	20230916-20250630	trades 316 / 0.48	PF 1.03	exp 0.07 (0.01)	total 2.07%	DD 14.18%	hold 2 days, 16:09:00	win% 48.7	L/S 11.28% / -9.21%	rejected 102	err 0
+is1	OITrend	20211201-20221231	trades 187 / 0.47	PF 1.28	exp 0.55 (0.20)	total 10.35%	DD 7.57%	hold 6 days, 7:52:00	win% 31.0	L/S -3.43% / 13.77%	rejected 841	err 0
+h1	OILongFlipC	20211201-20230916	trades 297 / 0.45	PF 0.69	exp -0.98 (-0.19)	total -29.05%	DD 29.30%	hold 2 days, 11:24:00	win% 40.1	L/S 	rejected 1	err 0
+h1	OIFlushLong	20211201-20230916	trades 240 / 0.37	PF 1.03	exp 0.08 (0.02)	total 1.98%	DD 13.24%	hold 2 days, 17:10:00	win% 50.4	L/S 	rejected 41	err 0
+h1	OIFlipD	20211201-20230916	trades 288 / 0.44	PF 0.94	exp -0.19 (-0.03)	total -5.58%	DD 17.91%	hold 2 days, 11:56:00	win% 43.8	L/S 5.75% / -11.33%	rejected 2	err 0
+is2	OITrend	20230101-20241231	trades 346 / 0.47	PF 1.43	exp 0.98 (0.30)	total 34.00%	DD 11.89%	hold 6 days, 10:14:00	win% 29.8	L/S 51.46% / -17.47%	rejected 1176	err 0
+is1	OIDropA	20211201-20221231	trades 212 / 0.54	PF 1.10	exp 0.21 (0.07)	total 4.42%	DD 11.99%	hold 5 days, 19:15:00	win% 29.7	L/S -11.19% / 15.60%	rejected 849	err 0
+h2	OILongFlipC	20230916-20250630	trades 301 / 0.46	PF 1.16	exp 0.53 (0.08)	total 15.99%	DD 10.23%	hold 2 days, 13:33:00	win% 46.2	L/S 	rejected 0	err 0
+h2	OIFlushLong	20230916-20250630	trades 247 / 0.38	PF 1.18	exp 0.43 (0.09)	total 10.74%	DD 12.68%	hold 2 days, 16:56:00	win% 51.8	L/S 	rejected 52	err 0
+h2	OIFlipD	20230916-20250630	trades 272 / 0.42	PF 0.79	exp -0.65 (-0.12)	total -17.79%	DD 18.10%	hold 2 days, 12:02:00	win% 42.6	L/S -11.55% / -6.24%	rejected 0	err 0
+is2	OIDropA	20230101-20241231	trades 396 / 0.54	PF 1.42	exp 0.88 (0.30)	total 34.87%	DD 13.94%	hold 5 days, 22:12:00	win% 27.3	L/S 52.81% / -17.94%	rejected 1288	err 0
+h1	OILongFlipD	20211201-20230916	trades 289 / 0.44	PF 1.00	exp -0.01 (-0.00)	total -0.14%	DD 21.42%	hold 2 days, 13:05:00	win% 41.9	L/S 	rejected 1	err 0
+h1	OIFlipE	20211201-20230916	trades 316 / 0.48	PF 1.15	exp 0.50 (0.08)	total 15.81%	DD 6.94%	hold 2 days, 14:01:00	win% 49.1	L/S -0.83% / 16.64%	rejected 1	err 0
+h1	OIFlipA	20211201-20230916	trades 315 / 0.48	PF 1.12	exp 0.39 (0.06)	total 12.19%	DD 10.55%	hold 2 days, 13:18:00	win% 47.0	L/S -3.03% / 15.22%	rejected 3	err 0
+is1	OIDropB	20211201-20221231	trades 210 / 0.53	PF 1.13	exp 0.25 (0.09)	total 5.17%	DD 9.48%	hold 5 days, 22:01:00	win% 31.9	L/S -7.97% / 13.13%	rejected 859	err 0
+h2	OILongFlipD	20230916-20250630	trades 264 / 0.4	PF 0.85	exp -0.49 (-0.08)	total -12.96%	DD 21.22%	hold 2 days, 11:35:00	win% 45.1	L/S 	rejected 2	err 0
+h2	OIFlipE	20230916-20250630	trades 284 / 0.43	PF 0.99	exp -0.02 (-0.00)	total -0.52%	DD 16.23%	hold 2 days, 11:50:00	win% 47.9	L/S 6.81% / -7.33%	rejected 1	err 0
+h2	OIFlipA	20230916-20250630	trades 305 / 0.47	PF 1.14	exp 0.54 (0.07)	total 16.34%	DD 14.88%	hold 2 days, 12:50:00	win% 47.2	L/S 19.39% / -3.05%	rejected 3	err 0
+is2	OIDropB	20230101-20241231	trades 383 / 0.52	PF 1.47	exp 1.06 (0.33)	total 40.75%	DD 13.98%	hold 6 days, 3:50:00	win% 30.5	L/S 60.83% / -20.08%	rejected 1355	err 0
+h1	OILongFlipE	20211201-20230916	trades 285 / 0.44	PF 0.93	exp -0.22 (-0.04)	total -6.21%	DD 14.14%	hold 2 days, 13:11:00	win% 43.9	L/S 	rejected 5	err 0
+h1	OILongFlipA	20211201-20230916	trades 307 / 0.47	PF 0.87	exp -0.40 (-0.08)	total -12.26%	DD 23.80%	hold 2 days, 12:09:00	win% 41.4	L/S 	rejected 2	err 0
+h1	OIFlipB	20211201-20230916	trades 307 / 0.47	PF 1.05	exp 0.18 (0.03)	total 5.59%	DD 17.11%	hold 2 days, 13:24:00	win% 44.0	L/S -13.35% / 18.94%	rejected 4	err 0
+is1	OIDropC	20211201-20221231	trades 220 / 0.56	PF 1.09	exp 0.17 (0.06)	total 3.82%	DD 13.35%	hold 5 days, 14:47:00	win% 30.0	L/S -11.21% / 15.03%	rejected 822	err 0
+h2	OILongFlipE	20230916-20250630	trades 294 / 0.45	PF 1.22	exp 0.88 (0.11)	total 25.82%	DD 12.07%	hold 2 days, 12:07:00	win% 50.0	L/S 	rejected 1	err 0
+h2	OILongFlipA	20230916-20250630	trades 295 / 0.45	PF 1.40	exp 1.50 (0.19)	total 44.20%	DD 9.91%	hold 2 days, 13:39:00	win% 53.9	L/S 	rejected 3	err 0
+h2	OIFlipB	20230916-20250630	trades 269 / 0.41	PF 0.95	exp -0.16 (-0.03)	total -4.44%	DD 15.86%	hold 2 days, 12:04:00	win% 45.4	L/S 10.41% / -14.84%	rejected 0	err 0
+is2	OIDropC	20230101-20241231	trades 385 / 0.53	PF 1.39	exp 0.89 (0.29)	total 34.16%	DD 15.13%	hold 6 days, 3:03:00	win% 27.0	L/S 56.60% / -22.44%	rejected 1325	err 0
+is1	OIDropD	20211201-20221231	trades 211 / 0.53	PF 1.13	exp 0.25 (0.09)	total 5.26%	DD 8.50%	hold 5 days, 19:34:00	win% 30.8	L/S -8.83% / 14.09%	rejected 860	err 0
+is2	OIDropD	20230101-20241231	trades 395 / 0.54	PF 1.41	exp 0.97 (0.30)	total 38.45%	DD 15.90%	hold 5 days, 22:47:00	win% 27.8	L/S 60.79% / -22.33%	rejected 1269	err 0
+is1	OIDropE	20211201-20221231	trades 215 / 0.54	PF 1.17	exp 0.31 (0.11)	total 6.71%	DD 10.73%	hold 5 days, 18:41:00	win% 31.6	L/S -9.16% / 15.87%	rejected 859	err 0
+is2	OIDropE	20230101-20241231	trades 392 / 0.54	PF 1.45	exp 1.00 (0.32)	total 39.26%	DD 14.47%	hold 6 days, 0:03:00	win% 28.1	L/S 58.18% / -18.92%	rejected 1309	err 0

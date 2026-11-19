@@ -1,0 +1,12 @@
+is1-6coins-4slots	TSMomentum	20210401-20230101	trades 373 / 0.58	PF 1.46	exp 9.89 (0.32)	total 36.89%	DD 12.55%	hold 5 days, 16:48:00	win% 31.1	L/S 14.53% / 22.35%	rejected 2954	err 0
+is2-6coins-4slots	TSMomentum	20230101-20250101	trades 411 / 0.56	PF 1.56	exp 13.00 (0.41)	total 53.43%	DD 14.79%	hold 5 days, 21:45:00	win% 27.5	L/S 73.32% / -19.89%	rejected 2709	err 0
+hoA-6coins-4slots	TSMomentum	20250101-20260601	trades 319 / 0.62	PF 1.06	exp 1.22 (0.05)	total 3.90%	DD 11.94%	hold 5 days, 1:08:00	win% 28.5	L/S 7.08% / -3.19%	rejected 1863	err 0
+is1-30coins-4slots	TSMomentum	20210401-20230101	trades 382 / 0.6	PF 1.22	exp 4.67 (0.14)	total 17.86%	DD 11.93%	hold 6 days, 6:09:00	win% 33.5	L/S -12.33% / 30.18%	rejected 63400	err 0
+hoA-30coins-4slots	TSMomentum	20250101-20260601	trades 313 / 0.61	PF 1.00	exp -0.00 (-0.00)	total -0.01%	DD 11.20%	hold 6 days, 3:39:00	win% 28.8	L/S -3.02% / 3.01%	rejected 48493	err 0
+hoB-6coins-4slots	TSMomentum	20260601-	trades 77 / 0.46	PF 3.12	exp 31.99 (1.35)	total 24.64%	DD 3.98%	hold 7 days, 5:55:00	win% 36.4	L/S 11.53% / 13.11%	rejected 902	err 0
+is2-30coins-4slots	TSMomentum	20230101-20250101	trades 408 / 0.56	PF 1.42	exp 11.07 (0.30)	total 45.17%	DD 13.78%	hold 6 days, 19:36:00	win% 29.2	L/S 50.06% / -4.89%	rejected 66660	err 0
+hoB-30coins-4slots	TSMomentum	20260601-	trades 89 / 0.53	PF 2.05	exp 20.13 (0.74)	total 17.91%	DD 8.34%	hold 7 days, 6:01:00	win% 29.2	L/S 4.87% / 13.05%	rejected 17133	err 0
+hoB-30coins-8slots	TSMomentumHalf	20260601-	trades 156 / 0.93	PF 2.18	exp 10.62 (0.80)	total 16.57%	DD 5.65%	hold 7 days, 17:18:00	win% 32.1	L/S 4.11% / 12.46%	rejected 12404	err 0
+is1-30coins-8slots	TSMomentumHalf	20210401-20230101	trades 691 / 1.08	PF 1.29	exp 2.91 (0.20)	total 20.09%	DD 11.36%	hold 6 days, 9:46:00	win% 32.6	L/S -1.52% / 21.60%	rejected 44858	err 0
+hoA-30coins-8slots	TSMomentumHalf	20250101-20260601	trades 587 / 1.14	PF 0.92	exp -0.77 (-0.06)	total -4.53%	DD 9.94%	hold 6 days, 1:10:00	win% 26.1	L/S -2.07% / -2.45%	rejected 34476	err 0
+is2-30coins-8slots	TSMomentumHalf	20230101-20250101	trades 826 / 1.13	PF 1.14	exp 1.55 (0.11)	total 12.80%	DD 15.29%	hold 6 days, 4:07:00	win% 26.2	L/S 19.14% / -6.35%	rejected 46123	err 0

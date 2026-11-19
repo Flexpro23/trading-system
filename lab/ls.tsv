@@ -1,0 +1,35 @@
+h1	LSFlip24A	20211201-20230916	trades 602 / 0.92	PF 1.01	exp 0.02 (0.01)	total 1.33%	DD 9.16%	hold 22:55:00	win% 49.0	L/S -16.69% / 18.02%	rejected 2	err 0
+h1	LSPrice72	20211201-20230916	trades 320 / 0.49	PF 1.51	exp 1.47 (0.24)	total 47.14%	DD 6.38%	hold 2 days, 17:35:00	win% 52.2	L/S 25.33% / 21.81%	rejected 1096	err 0
+h1	LSCrowd72	20211201-20230916	trades 398 / 0.61	PF 1.47	exp 1.97 (0.23)	total 78.56%	DD 14.97%	hold 2 days, 15:40:00	win% 52.0	L/S 32.34% / 46.22%	rejected 481	err 0
+h2	LSFlip24A	20230916-20250630	trades 578 / 0.89	PF 0.96	exp -0.08 (-0.02)	total -4.74%	DD 19.63%	hold 22:47:00	win% 47.8	L/S 9.93% / -14.67%	rejected 0	err 0
+h2	LSPrice72	20230916-20250630	trades 372 / 0.57	PF 1.17	exp 0.53 (0.09)	total 19.60%	DD 15.53%	hold 2 days, 17:05:00	win% 48.1	L/S 38.73% / -19.13%	rejected 1198	err 0
+h2	LSCrowd72	20230916-20250630	trades 481 / 0.74	PF 1.35	exp 1.22 (0.19)	total 58.89%	DD 15.59%	hold 2 days, 16:11:00	win% 46.6	L/S 69.93% / -11.04%	rejected 215	err 0
+h1	LSFlip24B	20211201-20230916	trades 591 / 0.9	PF 1.02	exp 0.03 (0.01)	total 2.05%	DD 14.65%	hold 23:00:00	win% 50.8	L/S -10.14% / 12.19%	rejected 3	err 0
+h1	LSPrice24	20211201-20230916	trades 512 / 0.78	PF 1.09	exp 0.15 (0.05)	total 7.58%	DD 10.07%	hold 23:24:00	win% 45.9	L/S -0.36% / 7.94%	rejected 626	err 0
+h1	LSCrowd24	20211201-20230916	trades 674 / 1.03	PF 1.43	exp 0.92 (0.21)	total 61.86%	DD 13.70%	hold 23:10:00	win% 51.2	L/S 29.44% / 32.42%	rejected 289	err 0
+h2	LSFlip24B	20230916-20250630	trades 567 / 0.87	PF 0.77	exp -0.40 (-0.12)	total -22.41%	DD 27.27%	hold 22:35:00	win% 46.9	L/S 2.84% / -25.24%	rejected 0	err 0
+h2	LSPrice24	20230916-20250630	trades 606 / 0.93	PF 1.18	exp 0.35 (0.10)	total 21.24%	DD 9.78%	hold 23:34:00	win% 47.0	L/S 32.89% / -11.66%	rejected 800	err 0
+h1	LSFlip24C	20211201-20230916	trades 585 / 0.89	PF 0.87	exp -0.26 (-0.06)	total -15.34%	DD 28.22%	hold 22:51:00	win% 48.4	L/S -25.80% / 10.46%	rejected 2	err 0
+h2	LSCrowd24	20230916-20250630	trades 802 / 1.23	PF 1.32	exp 0.68 (0.16)	total 54.82%	DD 6.52%	hold 23:23:00	win% 49.8	L/S 39.74% / 15.08%	rejected 52	err 0
+h1	LSFlip24D	20211201-20230916	trades 580 / 0.89	PF 0.88	exp -0.23 (-0.07)	total -13.07%	DD 16.20%	hold 22:43:00	win% 45.9	L/S -13.33% / 0.26%	rejected 2	err 0
+h2	LSFlip24C	20230916-20250630	trades 563 / 0.86	PF 0.84	exp -0.27 (-0.08)	total -15.37%	DD 21.67%	hold 22:59:00	win% 47.8	L/S 4.91% / -20.28%	rejected 0	err 0
+h1	LSFlip24E	20211201-20230916	trades 583 / 0.89	PF 1.05	exp 0.10 (0.03)	total 5.58%	DD 17.84%	hold 22:55:00	win% 48.9	L/S 0.28% / 5.30%	rejected 2	err 0
+h2	LSFlip24D	20230916-20250630	trades 544 / 0.83	PF 0.79	exp -0.38 (-0.12)	total -20.69%	DD 21.39%	hold 22:41:00	win% 45.4	L/S -15.73% / -4.96%	rejected 1	err 0
+h2	LSFlip24E	20230916-20250630	trades 599 / 0.92	PF 1.03	exp 0.06 (0.02)	total 3.54%	DD 10.23%	hold 22:40:00	win% 49.4	L/S 5.01% / -1.47%	rejected 2	err 0
+hold	OIFlipB	20250701-20261114	trades 225 / 0.45	PF 0.61	exp -1.31 (-0.24)	total -29.42%	DD 30.86%	hold 2 days, 9:47:00	win% 40.0	L/S -12.44% / -16.99%	rejected 1	err 0
+hold	LSCrowd72	20250701-20261114	trades 382 / 0.76	PF 1.15	exp 0.55 (0.08)	total 20.87%	DD 16.66%	hold 2 days, 14:31:00	win% 50.0	L/S -3.77% / 24.65%	rejected 352	err 0
+hold	LSCrowd24	20250701-20261114	trades 650 / 1.3	PF 1.15	exp 0.33 (0.08)	total 21.66%	DD 20.22%	hold 23:08:00	win% 49.4	L/S -4.47% / 26.13%	rejected 136	err 0
+hold	OIFlipC	20250701-20261114	trades 233 / 0.47	PF 0.82	exp -0.58 (-0.10)	total -13.57%	DD 18.67%	hold 2 days, 11:53:00	win% 44.2	L/S -22.34% / 8.77%	rejected 3	err 0
+hold	LSFlip24D	20250701-20261114	trades 438 / 0.87	PF 0.90	exp -0.18 (-0.05)	total -7.91%	DD 13.04%	hold 22:59:00	win% 48.9	L/S -5.58% / -2.32%	rejected 2	err 0
+hold	LSFlip24A	20250701-20261114	trades 457 / 0.91	PF 0.83	exp -0.33 (-0.09)	total -15.05%	DD 19.91%	hold 22:37:00	win% 47.5	L/S -5.38% / -9.67%	rejected 1	err 0
+hold	OIFlipD	20250701-20261114	trades 226 / 0.45	PF 1.19	exp 0.63 (0.10)	total 14.26%	DD 9.22%	hold 2 days, 13:40:00	win% 45.6	L/S 12.62% / 1.64%	rejected 2	err 0
+hold	LSFlip24E	20250701-20261114	trades 439 / 0.88	PF 0.87	exp -0.28 (-0.07)	total -12.24%	DD 15.91%	hold 22:52:00	win% 47.4	L/S -15.47% / 3.23%	rejected 5	err 0
+hold	LSFlip24B	20250701-20261114	trades 457 / 0.91	PF 0.79	exp -0.42 (-0.12)	total -19.39%	DD 21.78%	hold 22:45:00	win% 44.4	L/S -4.93% / -14.46%	rejected 1	err 0
+hold	OIFlipE	20250701-20261114	trades 227 / 0.45	PF 0.86	exp -0.49 (-0.08)	total -11.17%	DD 15.52%	hold 2 days, 11:17:00	win% 42.3	L/S -1.55% / -9.62%	rejected 3	err 0
+hold	OIFlipA	20250701-20261114	trades 235 / 0.47	PF 0.88	exp -0.39 (-0.06)	total -9.22%	DD 14.40%	hold 2 days, 11:16:00	win% 49.8	L/S -2.67% / -6.55%	rejected 1	err 0
+hold	LSFlip24C	20250701-20261114	trades 424 / 0.85	PF 0.85	exp -0.31 (-0.09)	total -12.98%	DD 17.68%	hold 22:53:00	win% 44.3	L/S -9.54% / -3.44%	rejected 0	err 0
+hold	OILongFlipA	20250701-20261114	trades 230 / 0.46	PF 0.94	exp -0.22 (-0.03)	total -5.14%	DD 19.66%	hold 2 days, 12:49:00	win% 49.6	L/S 	rejected 2	err 0
+hold	LSPrice72	20250701-20261114	trades 288 / 0.57	PF 1.12	exp 0.34 (0.06)	total 9.71%	DD 17.41%	hold 2 days, 17:01:00	win% 46.2	L/S -2.20% / 11.91%	rejected 1082	err 0
+hold	LSPrice24	20250701-20261114	trades 460 / 0.92	PF 1.05	exp 0.09 (0.03)	total 4.04%	DD 12.94%	hold 23:34:00	win% 42.8	L/S 5.99% / -1.95%	rejected 799	err 0
+hold	OILongFlipB	20250701-20261114	trades 222 / 0.44	PF 0.81	exp -0.72 (-0.11)	total -15.89%	DD 27.62%	hold 2 days, 10:58:00	win% 41.9	L/S 	rejected 1	err 0
+parity	LabCrowdFade	20230916-20250630	trades 802 / 1.23	PF 1.32	exp 0.68 (0.16)	total 54.82%	DD 6.52%	hold 23:23:00	win% 49.8	L/S 39.74% / 15.08%	rejected 52	err 0

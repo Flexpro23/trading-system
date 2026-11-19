@@ -1,0 +1,9 @@
+{
+  "bot_name": "lab-coinflip",
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "max_open_trades": 4,
+  "db_url": "sqlite:///lab/db/coinflip.sqlite",
+  "force_entry_enable": false,
+  "api_server": {"enabled": false}
+}

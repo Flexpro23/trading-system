@@ -1,0 +1,29 @@
+is1-btc	VwapScalp	20210401-20230101	trades 	PF 	exp 	total 	DD 	hold 0:00	win% 0	L/S 	rejected 	err 0
+is2-btc	VwapScalp	20230101-20250101	trades 	PF 	exp 	total 	DD 	hold 0:00	win% 0	L/S 	rejected 	err 0
+is1-six-nodetail	VwapScalp	20210401-20230101	trades 2 / 0.0	PF 0.00	exp 4.70 (100.00)	total 0.94%	DD 0.00%	hold 0:10:00	win% 100	L/S 	rejected 0	err 0
+is2-six-nodetail	VwapScalp	20230101-20250101	trades 6 / 0.01	PF 0.07	exp -3.64 (-0.62)	total -2.18%	DD 2.18%	hold 0:11:00	win% 33.3	L/S -0.22% / -1.96%	rejected 0	err 0
+is1	Mom5d	20210401-20230101	trades 938 / 1.47	PF 1.28	exp 1.20 (0.20)	total 112.57%	DD 23.75%	hold 1 day, 20:18:00	win% 28.5	L/S 93.28% / 19.29%	rejected 30785	err 0
+is2	Mom5d	20230101-20250101	trades 1008 / 1.38	PF 1.25	exp 0.83 (0.18)	total 84.10%	DD 21.07%	hold 1 day, 22:52:00	win% 27.6	L/S 89.03% / -4.93%	rejected 28013	err 0
+null-btc-nodetail-fee0	Flip5m	20230101-20250101	trades 1390 / 1.9	PF 0.87	exp -0.46 (-0.08)	total -63.46%	DD 64.24%	hold 1:31:00	win% 39.4	L/S -31.56% / -31.89%	rejected 0	err 0
+null-nodetail-fee0	Flip15m	20230101-20250101	trades 790 / 1.08	PF 0.90	exp -0.42 (-0.05)	total -32.85%	DD 36.79%	hold 23:32:00	win% 43.5	L/S -17.02% / -15.82%	rejected 0	err 0
+null-btc-detail-fee0	Flip5m	20230101-20250101	trades 1415 / 1.94	PF 0.88	exp -0.39 (-0.07)	total -55.89%	DD 57.37%	hold 1:25:00	win% 42.8	L/S -26.38% / -29.51%	rejected 0	err 0
+is1	Mom2d	20210401-20230101	trades 1356 / 2.12	PF 1.02	exp 0.04 (0.02)	total 5.67%	DD 28.04%	hold 21:50:00	win% 29.9	L/S -11.06% / 16.73%	rejected 22906	err 0
+null-detail-fee0	Flip1h	20230101-20250101	trades 590 / 0.81	PF 0.98	exp -0.11 (-0.01)	total -6.22%	DD 32.10%	hold 3 days, 12:49:00	win% 46.3	L/S 19.84% / -26.05%	rejected 716	err 0
+null-nodetail-fee0	Flip1h	20230101-20250101	trades 579 / 0.79	PF 1.01	exp 0.06 (0.01)	total 3.53%	DD 27.90%	hold 3 days, 15:32:00	win% 46.5	L/S 26.89% / -23.36%	rejected 296	err 0
+is2	Mom2d	20230101-20250101	trades 1560 / 2.13	PF 1.04	exp 0.06 (0.03)	total 9.39%	DD 33.94%	hold 21:56:00	win% 26.3	L/S 33.34% / -23.95%	rejected 19047	err 0
+null-detail-fee0	Flip15m	20230101-20250101	trades 803 / 1.1	PF 0.95	exp -0.22 (-0.03)	total -17.46%	DD 24.16%	hold 23:08:00	win% 45.8	L/S -14.12% / -3.34%	rejected 0	err 0
+is1	Mom1d	20210401-20230101	trades 1723 / 2.69	PF 0.81	exp -0.22 (-0.14)	total -37.53%	DD 42.86%	hold 12:25:00	win% 28.0	L/S -24.13% / -13.40%	rejected 15773	err 0
+null-detail	Flip1h	20230101-20250101	trades 590 / 0.81	PF 0.94	exp -0.28 (-0.03)	total -16.38%	DD 34.07%	hold 3 days, 12:49:00	win% 46.3	L/S 13.74% / -30.13%	rejected 716	err 0
+is2	Mom1d	20230101-20250101	trades 1925 / 2.63	PF 0.89	exp -0.15 (-0.09)	total -28.85%	DD 41.72%	hold 12:25:00	win% 25.0	L/S -18.34% / -10.51%	rejected 14048	err 0
+is1-btc	VwapSnap	20210401-20230101	trades 365 / 0.57	PF 0.40	exp -1.80 (-0.40)	total -65.58%	DD 65.76%	hold 0:15:00	win% 32.3	L/S -40.90% / -24.68%	rejected 0	err 0
+is2-btc	VwapSnap	20230101-20250101	trades 424 / 0.58	PF 0.21	exp -1.61 (-0.59)	total -68.43%	DD 68.43%	hold 0:19:00	win% 25.0	L/S -44.64% / -23.79%	rejected 0	err 0
+is2-btc-fee0	VwapSnap	20230101-20250101	trades 424 / 0.58	PF 0.97	exp -0.06 (-0.01)	total -2.59%	DD 16.38%	hold 0:19:00	win% 63.7	L/S -14.02% / 11.43%	rejected 0	err 0
+is2-six-nodetail	VwapSnap	20230101-20250101	trades 2027 / 2.77	PF 0.38	exp -0.49 (-0.43)	total -99.27%	DD 99.28%	hold 0:16:00	win% 31.7	L/S -46.44% / -52.83%	rejected 0	err 0
+is1-fee2x	Mom5d	20210401-20230101	trades 930 / 1.45	PF 1.21	exp 0.90 (0.15)	total 83.50%	DD 29.88%	hold 1 day, 20:21:00	win% 27.2	L/S 86.97% / -3.47%	rejected 30412	err 0
+is2-fee2x	Mom5d	20230101-20250101	trades 997 / 1.36	PF 1.12	exp 0.37 (0.09)	total 37.28%	DD 27.34%	hold 1 day, 23:05:00	win% 26.7	L/S 55.84% / -18.55%	rejected 27646	err 0
+holdout-b	Mom5d	20260601-	trades 246 / 1.47	PF 1.30	exp 0.82 (0.22)	total 20.26%	DD 18.45%	hold 1 day, 16:13:00	win% 26.8	L/S 18.91% / 1.35%	rejected 8141	err 0
+holdout-a-null	Flip1h	20250101-20260601	trades 433 / 0.84	PF 0.96	exp -0.19 (-0.02)	total -8.40%	DD 25.09%	hold 3 days, 5:06:00	win% 48.0	L/S -5.01% / -3.38%	rejected 835	err 0
+holdout-a-fee2x	Mom5d	20250101-20260601	trades 766 / 1.48	PF 0.93	exp -0.17 (-0.05)	total -13.10%	DD 28.88%	hold 1 day, 15:30:00	win% 26.2	L/S 11.21% / -24.31%	rejected 27953	err 0
+holdout-a	Mom5d	20250101-20260601	trades 778 / 1.51	PF 1.02	exp 0.05 (0.02)	total 4.07%	DD 25.91%	hold 1 day, 15:26:00	win% 27.1	L/S 19.84% / -15.77%	rejected 28409	err 0
+is1	Mom6h	20210401-20230101	trades 2385 / 3.73	PF 0.92	exp -0.11 (-0.06)	total -26.56%	DD 40.31%	hold 2:54:00	win% 26.3	L/S -28.48% / 1.93%	rejected 0	err 0
+is2	Mom6h	20230101-20250101	trades 2834 / 3.88	PF 0.54	exp -0.31 (-0.36)	total -86.84%	DD 87.13%	hold 2:50:00	win% 22.1	L/S -50.23% / -36.62%	rejected 0	err 0

@@ -1,0 +1,2 @@
+is1-fee2x Mom5d 20210401-20230101 --timeframe-detail 15m --fee 0.001
+is2-fee2x Mom5d 20230101-20250101 --timeframe-detail 15m --fee 0.001

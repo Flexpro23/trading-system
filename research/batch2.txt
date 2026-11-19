@@ -1,0 +1,10 @@
+is1 Mom6h 20210401-20230101 --timeframe-detail 5m
+is2 Mom6h 20230101-20250101 --timeframe-detail 5m
+is1-btc VwapScalp 20210401-20230101 --timeframe-detail 1m --pairs BTC/USDT:USDT
+is2-btc VwapScalp 20230101-20250101 --timeframe-detail 1m --pairs BTC/USDT:USDT
+is1-six-nodetail VwapScalp 20210401-20230101
+is2-six-nodetail VwapScalp 20230101-20250101
+null-detail-fee0 Flip15m 20230101-20250101 --timeframe-detail 5m --fee 0
+null-nodetail-fee0 Flip15m 20230101-20250101 --fee 0
+null-btc-detail-fee0 Flip5m 20230101-20250101 --timeframe-detail 1m --fee 0 --pairs BTC/USDT:USDT
+null-btc-nodetail-fee0 Flip5m 20230101-20250101 --fee 0 --pairs BTC/USDT:USDT

@@ -1,0 +1,9 @@
+is1 Mom5d 20210401-20230101 --timeframe-detail 15m
+is2 Mom5d 20230101-20250101 --timeframe-detail 15m
+is1 Mom2d 20210401-20230101 --timeframe-detail 15m
+is2 Mom2d 20230101-20250101 --timeframe-detail 15m
+is1 Mom1d 20210401-20230101 --timeframe-detail 15m
+is2 Mom1d 20230101-20250101 --timeframe-detail 15m
+null-detail-fee0 Flip1h 20230101-20250101 --timeframe-detail 15m --fee 0
+null-nodetail-fee0 Flip1h 20230101-20250101 --fee 0
+null-detail Flip1h 20230101-20250101 --timeframe-detail 15m

@@ -1,0 +1,33 @@
+.venv/
+.env
+user_data/data/
+user_data/logs/
+user_data/backtest_results/
+user_data/*.sqlite*
+user_data/config.live.json
+bot.pid
+user_data/config.json.bak
+ui.pid
+user_data/control.json
+user_data/control_state.json
+user_data/manual_trades.sqlite
+user_data/manual_state.json
+user_data/ai_key.txt
+
+lab/db/
+lab/pids/
+lab/logs/
+lab/uptime.json
+lab/history.jsonl
+lab/health.log
+
+# local settings and secrets (setup.sh creates config.json from config.example.json)
+user_data/config.json
+user_data/*.backup*
+.claude/
+__pycache__/
+*.pid
+# large or regenerated data
+backtest/out/
+lab/ratio/
+research/errors.log
