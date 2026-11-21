@@ -316,7 +316,7 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
         <p class="pline" id="scalpLine">Connecting</p>
         <label class="switch" style="margin-bottom:14px"><input type="checkbox" id="scalpOn"><span>Scalp bot opens trades by itself</span></label>
         <div class="field"><label for="scalpTf">Entry candles</label>
-          <select id="scalpTf"><option value="1m">1 minute</option><option value="5m">5 minutes</option><option value="15m">15 minutes</option></select></div>
+          <select id="scalpTf"><option value="1m">1 minute</option><option value="5m">5 minutes</option><option value="15m">15 minutes</option><option value="1m+5m">1 and 5 minutes together</option></select></div>
         <div class="field"><label for="scalpTrig">Entry signal at your zones</label>
           <select id="scalpTrig"><option value="flip">Delta flip: closes back out of the zone on heavy buying</option><option value="absorb">Absorption: heavy selling into the zone that fails to push it lower</option><option value="ddiv">Delta divergence: lower low in price, higher low in CVD</option></select></div>
         <div class="field"><label for="scalpRisk">Risk per trade</label>
@@ -735,8 +735,8 @@ function renderScalp() {
   if (document.activeElement !== $('scalpOn')) $('scalpOn').checked = !!c.scalp_on;
   [['scalpTf', 'scalp_tf'], ['scalpTrig', 'scalp_trigger'], ['scalpRisk', 'scalp_risk_pct'], ['scalpMax', 'scalp_max_trades']].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = c[k]; });
   const t = ts => new Date(ts * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-  $('scalpPairs').innerHTML = !c.scalp_on ? '' : '<table class="left"><tbody>' + S.pairs.map(p => { const m = (sc.pairs || {})[p];
-    return `<tr><td><b>${esc(name(p))}</b></td><td>${m ? esc(m.msg) : 'waiting for the next candle to close'}</td><td class="muted">${m ? t(m.t) : ''}</td></tr>`; }).join('') + '</tbody></table>';
+  $('scalpPairs').innerHTML = !c.scalp_on ? '' : '<table class="left"><tbody>' + (Object.keys(sc.pairs || {}).length ? Object.keys(sc.pairs).sort() : S.pairs).map(k => { const m = (sc.pairs || {})[k], [p, tfk] = k.split(' ');
+    return `<tr><td><b>${esc(name(p))}</b>${tfk ? ' <span class="muted">' + esc(tfk) + '</span>' : ''}</td><td>${m ? esc(m.msg) : 'waiting for the next candle to close'}</td><td class="muted">${m ? t(m.t) : ''}</td></tr>`; }).join('') + '</tbody></table>';
 }
 function renderRules(force) {
   if (rulesDirty && !force) return;

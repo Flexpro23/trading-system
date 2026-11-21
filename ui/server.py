@@ -99,6 +99,14 @@ def pairs() -> list:
     return cfg()["exchange"]["pair_whitelist"]
 
 
+# Coins only the scalp bot trades, to collect signals faster. The swing bot and the lab keep the six in config.json.
+SCALP_EXTRA = [f"{c}/USDT:USDT" for c in ("ADA", "AVAX", "LINK", "LTC", "SUI", "TRX", "DOT", "BCH")]
+
+
+def scalp_pairs() -> list:
+    return pairs() + [p for p in SCALP_EXTRA if p not in pairs()]
+
+
 def symbol(pair: str) -> str:
     return pair.split(":")[0].replace("/", "")
 
@@ -128,7 +136,7 @@ def prices() -> dict:
     now = time.time()
     if now - _px["t"] > 2:
         _px["t"] = now                                  # also spaces out retries after a failure
-        want = {symbol(p): p for p in pairs()}
+        want = {symbol(p): p for p in scalp_pairs()}
         if now - _px["chg_t"] > 60:
             _px["chg_t"] = now
             try:
@@ -170,7 +178,8 @@ def m_init():
         c.execute("""create table if not exists ai (id integer primary key autoincrement, asked real, pair text,
             question text, context text, answer text, answered real)""")
         for col, typ in (("tp2", "real"), ("tp3", "real"), ("parent", "integer"), ("by", "text default 'you'"),
-                         ("be", "integer default 0")):     # 1 = move the stop to entry after the first take profit
+                         ("be", "integer default 0"),      # 1 = move the stop to entry after the first take profit
+                         ("tf", "text")):                  # candle size of the scalp signal that opened it
             if col not in have:
                 c.execute(f"alter table pos add column {col} {typ}")
 
@@ -217,10 +226,10 @@ def m_reduce(pid: int, price: float, reason: str, frac: float = 1.0, when: float
             return True
         if part * r["entry"] < 1e-9:
             return False
-        c.execute("""insert into pos (pair, side, qty, entry, sl, tp, risk_pct, lev, opened, closed, exit, reason, pnl, parent, by)
-                     values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        c.execute("""insert into pos (pair, side, qty, entry, sl, tp, risk_pct, lev, opened, closed, exit, reason, pnl, parent, by, tf)
+                     values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                   (r["pair"], r["side"], part, r["entry"], r["sl"], price if slot else None, r["risk_pct"], r["lev"],
-                   r["opened"], when, price, reason, m_pnl(r, price, part), pid, r["by"]))
+                   r["opened"], when, price, reason, m_pnl(r, price, part), pid, r["by"], r["tf"]))
         c.execute("update pos set qty=? where id=?", (r["qty"] - part, pid))
         if slot:
             c.execute(f"update pos set {slot}=null where id=?", (pid,))
@@ -401,7 +410,7 @@ def page():
 @app.get("/api/state")
 def state():
     c = control()
-    out = {"control": c, "pairs": pairs(), "prices": prices(), "today": today(),
+    out = {"control": c, "pairs": pairs(), "scalp_pairs": scalp_pairs(), "prices": prices(), "today": today(),
            "bot_up": False, "max_stop_pct": MAX_STOP_PCT, "mmr": MMR}
     try:
         out["day"] = json.loads(STATE.read_text())
@@ -444,7 +453,7 @@ def state():
 
 @app.get("/api/candles")
 def candles(pair: str, tf: str = "15m"):
-    if pair not in pairs() or tf not in ("1m", "5m", "15m", "1h", "4h", "1d"):
+    if pair not in scalp_pairs() or tf not in ("1m", "5m", "15m", "1h", "4h", "1d"):
         raise HTTPException(400, "Unknown pair or timeframe")
     try:
         rows = requests.get("https://fapi.binance.com/fapi/v1/klines",
@@ -572,8 +581,8 @@ async def set_control(request: Request):
             v = int(v) if k in ("max_bot_trades", "scalp_max_trades") else v
         elif k in ("auto_trading", "scalp_on"):
             v = bool(v)
-        elif k == "scalp_tf" and v not in scalp.SEC:
-            raise HTTPException(400, "scalp_tf must be 1m, 5m or 15m")
+        elif k == "scalp_tf" and v not in (*scalp.SEC, "1m+5m"):
+            raise HTTPException(400, "scalp_tf must be 1m, 5m, 15m or 1m+5m")
         elif k == "scalp_trigger" and v not in scalp.TRIGGERS:
             raise HTTPException(400, "scalp_trigger must be flip, absorb or ddiv")
         elif k == "sides" and v not in ("both", "long", "short"):
@@ -595,10 +604,10 @@ _lv = {}
 @app.get("/api/levels")
 def level_map(pair: str):
     """Your level method for one coin (ui/levels.py), cached for two minutes."""
-    if pair not in pairs():
+    if pair not in scalp_pairs():
         raise HTTPException(400, "Unknown pair")
     hit = _lv.get(pair)
-    if hit and time.time() - hit["updated"] < 120:
+    if hit and time.time() - hit["updated"] < (120 if pair in pairs() else 900):   # scalp-only coins refresh less often
         return hit
     try:
         _lv[pair] = levels.analyse(symbol(pair))
@@ -918,8 +927,8 @@ def s_enter(pair: str, sig: dict, tf: str, c: dict) -> str:
     r = abs(px - stop)
     tps = [px + n * r if up else px - n * r for n in (1, 2, 3)]
     with _mlock, mdb() as db:
-        db.execute("insert into pos (pair, side, qty, entry, sl, tp, tp2, tp3, risk_pct, lev, opened, by, be) values (?,?,?,?,?,?,?,?,?,?,?,?,1)",
-                   (pair, sig["side"], notional / px, px, stop, tps[0], tps[1], tps[2], c["scalp_risk_pct"], lev, time.time(), "scalp"))
+        db.execute("insert into pos (pair, side, qty, entry, sl, tp, tp2, tp3, risk_pct, lev, opened, by, be, tf) values (?,?,?,?,?,?,?,?,?,?,?,?,1,?)",
+                   (pair, sig["side"], notional / px, px, stop, tps[0], tps[1], tps[2], c["scalp_risk_pct"], lev, time.time(), "scalp", tf))
     return f"opened {sig['side']} at {px:g}, stop {stop:g} ({sig['why']})"
 
 
@@ -929,13 +938,12 @@ def s_tick():
     if not c["scalp_on"]:
         _scalp["state"] = "off"
         return
-    tf = c["scalp_tf"]
-    sec = scalp.SEC[tf]
+    tfs = c["scalp_tf"].split("+")                   # "1m+5m" checks both candle sizes
     mine = [r for r in m_open() if r["by"] == "scalp"]
     px = prices()
     for r in mine:                                   # time exit
         p = px.get(r["pair"], {}).get("last")
-        if p and now - r["opened"] > scalp.HOLD[tf]:
+        if p and now - r["opened"] > scalp.HOLD[r["tf"] or tfs[-1]]:
             m_close(r["id"], p, "time_exit")
     with mdb() as db:
         n, total = db.execute("select count(*), coalesce(sum(pnl),0) from pos where by='scalp' and closed is not null and parent is null").fetchone()
@@ -951,13 +959,20 @@ def s_tick():
     if day.get("day") == today() and day.get("locked"):
         _scalp["state"] = "paused: daily limit reached"
         return
-    _scalp.update(state=f"running on {tf} candles", note="")
+    _scalp.update(state=f"running on {' and '.join(tfs)} candles", note="")
     n_open = len(mine)
+    for tf in tfs:
+        n_open = s_scan(tf, c, now, mine, n_open, len(tfs) > 1)
+
+
+def s_scan(tf: str, c: dict, now: float, mine: list, n_open: int, tag: bool) -> int:
+    sec = scalp.SEC[tf]
     bar = int(now // sec) * sec                       # open time of the candle now forming
-    for pair in pairs():
+    for pair in scalp_pairs():
         if _seen.get((pair, tf)) == bar or now < bar + 2:
             continue
-        say = lambda m: _scalp["pairs"].__setitem__(pair, {"t": now, "msg": m})
+        key = f"{pair} {tf}" if tag else pair
+        say = lambda m: _scalp["pairs"].__setitem__(key, {"t": now, "msg": m})
         if n_open >= c["scalp_max_trades"]:
             _seen[(pair, tf)] = bar
             say("waiting: the most trades allowed are open")
@@ -983,11 +998,12 @@ def s_tick():
             msg = s_enter(pair, sig, tf, c)
             if msg.startswith("opened"):
                 n_open += 1
-            print("scalp:", pair, msg, flush=True)
+            print("scalp:", pair, tf, msg, flush=True)
             say(msg)
         else:
             near = sum(1 for z in zones if z["strength"] >= 2 and abs(z["price"] - rows[-1][4]) / rows[-1][4] < 0.02)
             say(f"no signal; {near} zone{'' if near == 1 else 's'} within 2% of the price")
+    return n_open
 
 
 def s_loop():
