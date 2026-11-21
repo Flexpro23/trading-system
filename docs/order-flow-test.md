@@ -57,7 +57,7 @@ Market orders 0.05%, target limit orders 0.02%, stops another 0.02% slippage, fu
 
 ## Results (run 2026-11-18)
 
-Run by `backtest/flow_bt.py`; raw reports in `backtest/out/flow_report_{1m,5m,15m}.txt`. Training period, six coins, 192 variants per timeframe.
+Run by `backtest/flow_bt.py`; raw reports in `backtest/reports/flow_report_{1m,5m,15m}.txt`. Training period, six coins, 192 variants per timeframe.
 
 | Entries | Positive after fees | Passed the selection rule | Best variant before fees | Same variant after fees: training / held back | Typical stop |
 |---|---|---|---|---|---|
@@ -90,7 +90,7 @@ Question: do the same signals survive when the entry is a resting limit order at
 
 ## Results, limit-order entries (run 2026-11-19)
 
-Run by `backtest/flow_limit_bt.py`; raw reports in `backtest/out/flowlim_report_{1m,5m,15m}.txt`. Six coins, 384 variants per timeframe.
+Run by `backtest/flow_limit_bt.py`; raw reports in `backtest/reports/flowlim_report_{1m,5m,15m}.txt`. Six coins, 384 variants per timeframe.
 
 | Entries | Positive after fees: training / held back | Passed the selection rule | Best variant on training | Same variant held back | With market entries (best, training) | Orders filled |
 |---|---|---|---|---|---|---|

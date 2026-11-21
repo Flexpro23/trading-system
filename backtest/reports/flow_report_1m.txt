@@ -1,0 +1,20 @@
+=== ENTRY 1m: 192 selectable variants
+positive on training after fees: 0.0% of 192 with 30+ trades; before fees: 54.2%
+passed the selection rule: 0
+best 5 before fees (150+ training trades):
+  absorb stop=atr tgt=levels trend=ema200 w=0.003 str>=1 levels=base | train n=17328 (15.8/day) avg -0.384R win 30% coins+ 0 | before fees +0.028 | placebo -0.410 | held n=7374 avg -0.422 placebo -0.425 | median stop 0.28%
+  absorb stop=atr tgt=levels trend=ema200 w=0.003 str>=2 levels=base | train n=14251 (13.0/day) avg -0.377R win 31% coins+ 0 | before fees +0.025 | placebo -0.395 | held n=6209 avg -0.424 placebo -0.415 | median stop 0.29%
+  absorb stop=atr tgt=levels trend=ema200 w=0.003 str>=1 levels=plus | train n=24990 (22.8/day) avg -0.369R win 31% coins+ 0 | before fees +0.018 | placebo -0.391 | held n=10952 avg -0.405 placebo -0.407 | median stop 0.30%
+  absorb stop=atr tgt=levels trend=none   w=0.003 str>=2 levels=base | train n=26114 (23.8/day) avg -0.385R win 31% coins+ 0 | before fees +0.017 | placebo -0.404 | held n=11767 avg -0.440 placebo -0.445 | median stop 0.29%
+  absorb stop=atr tgt=levels trend=none   w=0.003 str>=1 levels=base | train n=32146 (29.3/day) avg -0.395R win 30% coins+ 0 | before fees +0.017 | placebo -0.415 | held n=14102 avg -0.451 placebo -0.455 | median stop 0.28%
+by entry type, mean over variants with 30+ training trades (after fees / before fees / minus placebo / trades per variant):
+  ddiv   -0.317 / +0.004 / +0.0026 / 56868
+  absorb -0.348 / +0.006 / +0.0064 / 28455
+  flip   -0.281 / -0.009 / +0.0041 / 56613
+  close  -0.301 / +0.011 / +0.0051 / 96021
+  levels: False -0.323, True -0.307
+  width: 0.003 -0.328, atr -0.303
+  stop: atr -0.277, pct -0.354
+  target: r -0.314, levels -0.316
+  strength: 1 -0.316, 2 -0.314
+  trend: none -0.314, ema200 -0.316

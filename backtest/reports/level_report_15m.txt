@@ -1,0 +1,11 @@
+variants 1296, eligible 0
+share of variants positive: train 0.0 held 0.0 eligible-on-held None
+TOP 10 BY TRAINING (selection = first line):
+OPTION AVERAGES (mean of variant avg R: train, held):
+  trigger {'first': (-0.14, -0.137), 'close': (-0.127, -0.124), 'div': (-0.156, -0.145), 'pattern': (-0.097, -0.085)}
+  stop {'atr': (-0.128, -0.131), 'next': (-0.125, -0.115), 'pct': (-0.136, -0.122)}
+  target {'levels': (-0.119, -0.117), 'fib': (-0.142, -0.128), 'r': (-0.128, -0.123)}
+  trend {'none': (-0.134, -0.129), 'ema200': (-0.126, -0.116)}
+  width {'0.003': (-0.14, -0.132), '0.005': (-0.123, -0.113), 'atr': (-0.127, -0.122)}
+  strength {'1': (-0.129, -0.129), '2': (-0.13, -0.121), '3': (-0.131, -0.118)}
+  touches {'2': (-0.13, -0.122), '3': (-0.13, -0.124)}

@@ -42,7 +42,7 @@ Price move = the last 4 hours' return divided by the standard deviation of 4-hou
 
 ## Results (run 2026-11-19)
 
-Data: 11,212 daily files, 137 MB. Bitcoin from 2021-01-01, the other five coins from 2021-12-01 (the archive has nothing earlier), 99.9% of hours covered. Training period 2021-12-01 to 2025-06-30, halves split at 2023-09-16. Raw output: `backtest/out/oi_report.txt` (events) and `lab/oi.tsv` (strategies).
+Data: 11,212 daily files, 137 MB. Bitcoin from 2021-01-01, the other five coins from 2021-12-01 (the archive has nothing earlier), 99.9% of hours covered. Training period 2021-12-01 to 2025-06-30, halves split at 2023-09-16. Raw output: `backtest/reports/oi_report.txt` (events) and `lab/oi.tsv` (strategies).
 
 ### Stage 1: events, average % per event after 0.10% and funding
 

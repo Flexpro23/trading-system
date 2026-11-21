@@ -50,7 +50,7 @@ Market orders 0.05%, target limit orders 0.02%, stops another 0.02% slippage, fu
 
 ## Results (run 2026-11-19)
 
-Run by `backtest/flush_bt.py`; raw output in `backtest/out/flush_report.txt`. Training period, six coins, average R per event after fees.
+Run by `backtest/flush_bt.py`; raw output in `backtest/reports/flush_report.txt`. Training period, six coins, average R per event after fees.
 
 | Variant | Trades | Events | Per event | First / second half | Long / short | Coins positive | Price move only |
 |---|---|---|---|---|---|---|---|

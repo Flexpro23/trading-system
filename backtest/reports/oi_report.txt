@@ -1,0 +1,36 @@
+Coverage (first hour with a 4h open-interest change, share of hours with one after that):
+  BTC: 2021-01-01  99.8%
+  ETH: 2021-12-01  99.9%
+  SOL: 2021-12-01  99.9%
+  BNB: 2021-12-01  99.9%
+  XRP: 2021-12-01  99.9%
+  DOGE: 2021-12-01  99.9%
+Training 2021-12-01 to 2025-06-30, halves split at 2023-09-16
+
+=== hold 24h ===   net of 0.10% and funding, % per event
+H1               trades   875 events  327/ 346  all +0.253  halves -0.097 / +0.584  long +0.715 short -0.718  gross +0.401  at 0.20% +0.153  coins+ 4/6
+H1 price alone   trades  2463 events  766/ 942  all -0.080  halves -0.025 / -0.125  long +0.270 short -0.516  gross -0.045  at 0.20% -0.180  coins+ 2/6
+H1 middle OI     trades  1264 events  455/ 580  all -0.113  halves -0.148 / -0.086  long +0.192 short -0.516  gross -0.054  at 0.20% -0.213  coins+ 2/6
+H2               trades   843 events  354/ 438  all +0.073  halves +0.022 / +0.114  long +0.507 short -0.977  gross +0.250  at 0.20% -0.027  coins+ 4/6
+H2 price alone   trades  2463 events  766/ 942  all -0.120  halves -0.175 / -0.075  long +0.316 short -0.470  gross +0.045  at 0.20% -0.220  coins+ 2/6
+H2 middle OI     trades  1264 events  455/ 580  all -0.087  halves -0.052 / -0.114  long +0.316 short -0.392  gross +0.054  at 0.20% -0.187  coins+ 3/6
+  H1 minus price alone, first half: -0.072
+  H1 minus price alone, second half: +0.709
+  H1 minus price alone, whole period: +0.333  (+1.23 standard errors)
+  H2 minus price alone, first half: +0.197
+  H2 minus price alone, second half: +0.189
+  H2 minus price alone, whole period: +0.193  (+0.71 standard errors)
+
+=== hold 72h ===   net of 0.10% and funding, % per event
+H1               trades   689 events  263/ 279  all +0.462  halves +0.130 / +0.776  long +1.048 short -1.335  gross +0.516  at 0.20% +0.362  coins+ 4/6
+H1 price alone   trades  1410 events  490/ 563  all -0.494  halves -0.670 / -0.341  long +0.321 short -1.334  gross -0.421  at 0.20% -0.594  coins+ 1/6
+H1 middle OI     trades   864 events  321/ 409  all -0.752  halves -0.772 / -0.735  long +0.237 short -1.796  gross -0.691  at 0.20% -0.852  coins+ 1/6
+H2               trades   646 events  279/ 335  all +0.281  halves -0.251 / +0.724  long +0.955 short -1.320  gross +0.494  at 0.20% +0.181  coins+ 4/6
+H2 price alone   trades  1410 events  490/ 563  all +0.294  halves +0.470 / +0.141  long +1.134 short -0.521  gross +0.421  at 0.20% +0.194  coins+ 5/6
+H2 middle OI     trades   864 events  321/ 409  all +0.552  halves +0.572 / +0.535  long +1.596 short -0.437  gross +0.691  at 0.20% +0.452  coins+ 3/6
+  H1 minus price alone, first half: +0.801
+  H1 minus price alone, second half: +1.116
+  H1 minus price alone, whole period: +0.957  (+2.21 standard errors)
+  H2 minus price alone, first half: -0.721
+  H2 minus price alone, second half: +0.583
+  H2 minus price alone, whole period: -0.013  (-0.03 standard errors)

@@ -1,0 +1,29 @@
+variants 1296, eligible 60
+share of variants positive: train 0.066 held 0.074 eligible-on-held 0.3333333333333333
+TOP 10 BY TRAINING (selection = first line):
+  div     atr  fib    ema200 w=atr   str>=2 touches=2 | train n=  653 avg=+0.104 win=47% pf=1.18 coins+=5 | held n= 363 avg=-0.086 win=40% pf=0.87 coins+=2
+  pattern next r      ema200 w=0.003 str>=3 touches=2 | train n=  801 avg=+0.091 win=55% pf=1.19 coins+=6 | held n= 372 avg=-0.022 win=51% pf=0.96 coins+=3
+  pattern pct  r      ema200 w=0.003 str>=3 touches=2 | train n= 1096 avg=+0.068 win=54% pf=1.14 coins+=6 | held n= 483 avg=+0.012 win=51% pf=1.02 coins+=2
+  div     atr  fib    ema200 w=0.005 str>=2 touches=2 | train n=  654 avg=+0.059 win=47% pf=1.10 coins+=4 | held n= 389 avg=-0.127 win=41% pf=0.81 coins+=1
+  div     atr  fib    ema200 w=atr   str>=3 touches=2 | train n=  521 avg=+0.058 win=46% pf=1.10 coins+=4 | held n= 247 avg=-0.151 win=40% pf=0.77 coins+=1
+  pattern pct  r      ema200 w=0.003 str>=3 touches=3 | train n= 1293 avg=+0.049 win=54% pf=1.10 coins+=4 | held n= 591 avg=+0.008 win=51% pf=1.02 coins+=4
+  pattern next r      none   w=0.003 str>=1 touches=2 | train n= 1575 avg=+0.048 win=53% pf=1.10 coins+=5 | held n= 768 avg=-0.016 win=52% pf=0.97 coins+=2
+  pattern atr  r      ema200 w=0.003 str>=3 touches=2 | train n=  927 avg=+0.047 win=54% pf=1.10 coins+=4 | held n= 414 avg=+0.015 win=53% pf=1.03 coins+=3
+  div     pct  fib    ema200 w=atr   str>=2 touches=2 | train n=  658 avg=+0.046 win=48% pf=1.08 coins+=4 | held n= 356 avg=-0.098 win=48% pf=0.82 coins+=2
+  pattern next r      none   w=0.003 str>=1 touches=3 | train n= 1620 avg=+0.040 win=53% pf=1.08 coins+=4 | held n= 790 avg=+0.002 win=52% pf=1.00 coins+=3
+OPTION AVERAGES (mean of variant avg R: train, held):
+  trigger {'first': (-0.124, -0.118), 'close': (-0.085, -0.073), 'div': (-0.073, -0.101), 'pattern': (-0.022, -0.014)}
+  stop {'atr': (-0.069, -0.077), 'next': (-0.091, -0.092), 'pct': (-0.068, -0.061)}
+  target {'levels': (-0.082, -0.074), 'fib': (-0.082, -0.098), 'r': (-0.065, -0.057)}
+  trend {'none': (-0.087, -0.092), 'ema200': (-0.065, -0.061)}
+  width {'0.003': (-0.079, -0.083), '0.005': (-0.075, -0.072), 'atr': (-0.074, -0.075)}
+  strength {'1': (-0.079, -0.083), '2': (-0.075, -0.077), '3': (-0.074, -0.07)}
+  touches {'2': (-0.076, -0.076), '3': (-0.076, -0.077)}
+BEST BY COIN:
+  BTC: train n=97 avg=+0.083 | held n=67 avg=+0.135
+  ETH: train n=100 avg=+0.109 | held n=56 avg=-0.188
+  SOL: train n=127 avg=+0.187 | held n=62 avg=+0.007
+  BNB: train n=102 avg=-0.029 | held n=69 avg=-0.198
+  XRP: train n=111 avg=+0.183 | held n=55 avg=-0.106
+  DOGE: train n=116 avg=+0.065 | held n=54 avg=-0.196
+ACCOUNT: {'trades': 653, 'per_day': 0.5958029197080292, 'total_R': 67.67012383778484, 'max_drawdown_R': 42.523191222951645, 'longest_losing_streak': 11, 'most_same_side_open': 4} {'trades': 363, 'per_day': 0.7231075697211156, 'total_R': -31.09079576884177, 'max_drawdown_R': 50.99235452413576, 'longest_losing_streak': 11, 'most_same_side_open': 6}

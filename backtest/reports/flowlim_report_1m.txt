@@ -1,0 +1,24 @@
+=== LIMIT ENTRIES, 1m: 384 selectable variants
+positive on training after fees: 0.0% of 384 with 30+ trades; on held-back: 0.0%
+passed the selection rule: 0; of those positive on held-back: 0
+best 5 on training (150+ trades), whether or not they passed:
+  flip   limit=close stop=atr tgt=levels trend=ema200 w=atr   str>=2 levels=plus | train n=39665 (36.2/day) avg -0.155R win 49% coins+ 0 | placebo -0.163 | held n=16844 avg -0.165 coins+ 0 placebo -0.173 | filled 91% | median stop 0.75%
+  flip   limit=close stop=atr tgt=levels trend=ema200 w=atr   str>=1 levels=plus | train n=40227 (36.7/day) avg -0.157R win 49% coins+ 0 | placebo -0.166 | held n=17087 avg -0.166 coins+ 0 placebo -0.174 | filled 91% | median stop 0.74%
+  flip   limit=close stop=atr tgt=levels trend=none   w=atr   str>=2 levels=plus | train n=58261 (53.2/day) avg -0.157R win 50% coins+ 0 | placebo -0.163 | held n=25252 avg -0.171 coins+ 0 placebo -0.180 | filled 91% | median stop 0.76%
+  flip   limit=close stop=atr tgt=levels trend=none   w=atr   str>=1 levels=plus | train n=59268 (54.1/day) avg -0.159R win 49% coins+ 0 | placebo -0.166 | held n=25663 avg -0.174 coins+ 0 placebo -0.182 | filled 91% | median stop 0.76%
+  flip   limit=close stop=atr tgt=r      trend=ema200 w=atr   str>=2 levels=plus | train n=34867 (31.8/day) avg -0.161R win 46% coins+ 0 | placebo -0.170 | held n=15105 avg -0.177 coins+ 0 placebo -0.176 | filled 91% | median stop 0.73%
+mean over variants with 30+ training trades (after fees / minus placebo / held-back / trades per variant):
+  ddiv   limit=close -0.315 / +0.0022 / -0.317 / 52930
+  ddiv   limit=zone  -0.357 / -0.0035 / -0.354 / 40978
+  absorb limit=close -0.341 / +0.0089 / -0.374 / 27179
+  absorb limit=zone  -0.357 / +0.0098 / -0.392 / 24527
+  flip   limit=close -0.276 / +0.0040 / -0.274 / 54743
+  flip   limit=zone  -0.335 / +0.0023 / -0.342 / 27160
+  close  limit=close -0.304 / +0.0052 / -0.319 / 97476
+  close  limit=zone  -0.322 / +0.0034 / -0.345 / 87337
+  levels: False -0.339, True -0.321
+  width: 0.003 -0.349, atr -0.311
+  stop: atr -0.310, pct -0.351
+  target: r -0.329, levels -0.331
+  strength: 1 -0.334, 2 -0.327
+  trend: none -0.331, ema200 -0.329

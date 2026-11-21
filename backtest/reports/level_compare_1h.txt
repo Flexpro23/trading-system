@@ -1,0 +1,7 @@
+ENTRY 1h: real minus placebo, avg R per trade. train mean +0.0009, real better in 57%; held mean +0.0033, real better in 59%
+Best 5 before fees (training), with after-fee and placebo results:
+  div     atr  fib    ema200 w=atr str>=2 t=2 | before fees train +0.201 held +0.036 | after fees train +0.104 held -0.086 (n 653/363) | placebo train +0.044 held -0.150
+  div     next fib    ema200 w=atr str>=2 t=2 | before fees train +0.195 held +0.041 | after fees train +0.074 held -0.090 (n 631/346) | placebo train +0.015 held -0.132
+  div     next fib    ema200 w=atr str>=3 t=3 | before fees train +0.172 held -0.016 | after fees train +0.049 held -0.154 (n 596/332) | placebo train -0.008 held -0.212
+  div     next fib    ema200 w=atr str>=2 t=3 | before fees train +0.161 held +0.055 | after fees train +0.036 held -0.085 (n 697/396) | placebo train -0.012 held -0.139
+  div     atr  fib    ema200 w=0.005 str>=2 t=2 | before fees train +0.157 held -0.008 | after fees train +0.059 held -0.127 (n 654/389) | placebo train -0.004 held -0.141

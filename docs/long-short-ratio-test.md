@@ -45,7 +45,7 @@ Stage 1 and stage 2 results are below. Both L1 variants (24h and 72h) passed bot
 
 ## Results (run 2026-11-19)
 
-Coverage: the all-accounts ratio is present for 98.4% of hours from 2021-12-01. The top-trader ratio is missing for most of 2022 (75% coverage), so L2 and L3 have few events in the first half. Raw output: `backtest/out/ls_report.txt` (events), `lab/ls.tsv` (strategies).
+Coverage: the all-accounts ratio is present for 98.4% of hours from 2021-12-01. The top-trader ratio is missing for most of 2022 (75% coverage), so L2 and L3 have few events in the first half. Raw output: `backtest/reports/ls_report.txt` (events), `lab/ls.tsv` (strategies).
 
 ### Stage 1: events, average % after 0.10% and funding
 

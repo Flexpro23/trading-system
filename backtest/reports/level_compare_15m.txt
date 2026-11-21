@@ -1,0 +1,7 @@
+ENTRY 15m: real minus placebo, avg R per trade. train mean +0.0025, real better in 65%; held mean +0.0060, real better in 65%
+Best 5 before fees (training), with after-fee and placebo results:
+  div     atr  r      ema200 w=0.005 str>=1 t=3 | before fees train +0.021 held +0.030 | after fees train -0.130 held -0.142 (n 4129/1924) | placebo train -0.150 held -0.140
+  div     atr  r      ema200 w=0.005 str>=2 t=3 | before fees train +0.021 held +0.042 | after fees train -0.129 held -0.128 (n 3744/1730) | placebo train -0.152 held -0.141
+  pattern pct  levels ema200 w=0.005 str>=3 t=2 | before fees train +0.021 held +0.008 | after fees train -0.108 held -0.122 (n 5258/2228) | placebo train -0.125 held -0.081
+  pattern pct  levels none   w=0.005 str>=2 t=2 | before fees train +0.021 held +0.021 | after fees train -0.108 held -0.108 (n 12310/5165) | placebo train -0.124 held -0.114
+  pattern pct  levels ema200 w=0.005 str>=1 t=2 | before fees train +0.021 held +0.005 | after fees train -0.109 held -0.125 (n 8035/3548) | placebo train -0.123 held -0.097

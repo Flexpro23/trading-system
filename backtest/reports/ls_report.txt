@@ -1,0 +1,20 @@
+Coverage (first hour with a reading, share of hours with one after that):
+  BTC ls: 2021-01-01  98.7%
+  BTC top_ls: 2021-01-01  80.4%
+  ETH ls: 2021-12-01  98.4%
+  ETH top_ls: 2021-12-01  75.5%
+  SOL ls: 2021-12-01  98.4%
+  SOL top_ls: 2021-12-01  75.5%
+  BNB ls: 2021-12-01  98.4%
+  BNB top_ls: 2021-12-01  75.5%
+  XRP ls: 2021-12-01  98.4%
+  XRP top_ls: 2021-12-01  75.6%
+  DOGE ls: 2021-12-01  98.4%
+  DOGE top_ls: 2021-12-01  75.5%
+L1 fade crowd     24h trades  1927 events  839/ 976  halves +0.500 / +0.276  per trade +0.355  random median -0.080 p95 +0.057  long +0.700 (n 946) short +0.023 (n 981)  at 0.20% +0.279  coins+ 5/6
+L1 fade crowd     72h trades   936 events  415/ 487  halves +1.006 / +0.806  per trade +0.830  random median -0.074 p95 +0.301  long +1.379 (n 458) short +0.305 (n 478)  at 0.20% +0.798  coins+ 6/6
+L1 price version  24h trades  1590 events  627/ 733  halves +0.122 / +0.233  per trade +0.096  random median -0.099 p95 +0.056  long +0.493 (n 817) short -0.324 (n 773)  at 0.20% +0.082  coins+ 4/6
+L1 price version  72h trades   815 events  313/ 374  halves +0.952 / +0.639  per trade +0.771  random median -0.124 p95 +0.341  long +1.770 (n 417) short -0.275 (n 398)  at 0.20% +0.681  coins+ 5/6
+L2 follow top     24h trades  1755 events  368/1277  halves -0.395 / +0.008  per trade -0.093  random median -0.077 p95 +0.070  long +0.237 (n 995) short -0.526 (n 760)  at 0.20% -0.183  coins+ 1/6
+L2 follow top     72h trades   759 events  165/ 565  halves -1.042 / +0.285  per trade -0.072  random median -0.057 p95 +0.407  long +0.712 (n 424) short -1.064 (n 335)  at 0.20% -0.115  coins+ 2/6
+L3 top vs crowd   72h trades   430 events  139/ 284  halves -0.244 / +1.408  per trade +0.889  random median +0.070 p95 +0.685  long +1.719 (n 246) short -0.221 (n 184)  at 0.20% +0.765  coins+ 4/6

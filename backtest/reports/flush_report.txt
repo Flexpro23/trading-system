@@ -1,0 +1,13 @@
+BTC over the first half: +114%
+BTC over the second half: +153%
+5m random-time entries: long -0.465R, short -0.449R per trade
+15m random-time entries: long -0.292R, short -0.248R per trade
+5m K=3 immediate       trades  8982 events  3743 | per event -0.297R (halves -0.255 / -0.349) | long -0.256 n=4660 short -0.392 n=4322 | win 37% | coins+ 0 | random times mean -0.457 p95 -0.423 | costs x2 -0.668 | price move only -0.298 (3769 events) | fail
+5m K=3 confirm         trades  6880 events  3447 | per event -0.191R (halves -0.164 / -0.224) | long -0.185 n=3618 short -0.245 n=3262 | win 45% | coins+ 0 | random times mean -0.458 p95 -0.424 | costs x2 -0.396 | price move only -0.194 (3474 events) | fail
+5m K=4 immediate       trades  3975 events  1851 | per event -0.280R (halves -0.252 / -0.325) | long -0.191 n=2109 short -0.415 n=1866 | win 39% | coins+ 0 | random times mean -0.458 p95 -0.411 | costs x2 -0.612 | price move only -0.276 (1860 events) | fail
+5m K=4 confirm         trades  3180 events  1715 | per event -0.185R (halves -0.170 / -0.211) | long -0.143 n=1707 short -0.238 n=1473 | win 46% | coins+ 0 | random times mean -0.457 p95 -0.409 | costs x2 -0.357 | price move only -0.187 (1723 events) | fail
+15m K=3 immediate      trades  3198 events  1622 | per event -0.219R (halves -0.236 / -0.195) | long -0.157 n=1652 short -0.305 n=1546 | win 41% | coins+ 0 | random times mean -0.270 p95 -0.222 | costs x2 -0.443 | price move only -0.218 (1634 events) | fail
+15m K=3 confirm        trades  2528 events  1444 | per event -0.187R (halves -0.149 / -0.238) | long -0.117 n=1314 short -0.230 n=1214 | win 46% | coins+ 0 | random times mean -0.271 p95 -0.219 | costs x2 -0.299 | price move only -0.188 (1451 events) | fail
+15m K=4 immediate      trades  1454 events   779 | per event -0.186R (halves -0.181 / -0.194) | long -0.167 n=759 short -0.256 n=695 | win 43% | coins+ 0 | random times mean -0.271 p95 -0.200 | costs x2 -0.381 | price move only -0.191 (785 events) | fail
+15m K=4 confirm        trades  1190 events   696 | per event -0.191R (halves -0.188 / -0.195) | long -0.151 n=633 short -0.213 n=557 | win 46% | coins+ 1 | random times mean -0.271 p95 -0.198 | costs x2 -0.288 | price move only -0.183 (702 events) | fail
+No variant passed. Nothing selected; the held-back period was not run.
