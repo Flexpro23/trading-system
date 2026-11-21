@@ -92,7 +92,7 @@ if best:
         out[f"account_{part}"] = {"trades": len(es), "per_day": len(es) / days, "total_R": float(eq[-1]),
                                   "max_drawdown_R": dd, "longest_losing_streak": streak, "most_same_side_open": most}
 
-json.dump(out, open(B.OUT / f"report{suffix}.json", "w"), indent=1, default=float)
+json.dump(out, open(B.OUT.parent / "reports" / f"report{suffix}.json", "w"), indent=1, default=float)
 pd = lambda r: (f"{r['trigger']:7} {r['stop']:4} {r['target']:6} {r['trend']:6} w={r['width']:5} str>={r['strength']} touches={r['touches']} | "
                 f"train n={r['train_n']:5} avg={r['train_avg']:+.3f} win={r['train_win']:.0%} pf={r['train_pf']:.2f} coins+={r['train_coins_pos']} | "
                 f"held n={r['hold_n']:4} avg={r['hold_avg']:+.3f} win={r['hold_win']:.0%} pf={r['hold_pf']:.2f} coins+={r['hold_coins_pos']}")

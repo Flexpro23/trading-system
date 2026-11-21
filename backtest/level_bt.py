@@ -1,6 +1,6 @@
 """Backtest of your level method on 5m entries (docs/level-method.md, frozen plan).
 
-Run:  .venv/bin/python backtest/level_bt.py run [--pilot]      (writes backtest/out/<coin>.pkl)
+Run:  .venv/bin/python backtest/level_bt.py run [--pilot]      (writes backtest/out/<coin>.pkl; use backtest/run.sh)
       .venv/bin/python backtest/level_bt.py report               (selection on training data, then held-back)
 Shorts are simulated as longs on mirrored prices (-price), so every rule is written once.
 """

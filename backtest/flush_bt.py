@@ -1,5 +1,5 @@
 """Flush fade backtest. Plan and judging: docs/flush-fade-test.md.
-Run: .venv/bin/python backtest/flush_bt.py            (writes backtest/out/flush_report.txt)"""
+Run: .venv/bin/python backtest/flush_bt.py            (writes backtest/reports/flush_report.txt)"""
 import sys
 from pathlib import Path
 
@@ -189,7 +189,7 @@ def main():
             lines.append(f"  extra entry slippage {100 * slip:.2f}%: per event {np.mean(per_event(run(slip=slip))):+.3f}R")
     else:
         lines.append("No variant passed. Nothing selected; the held-back period was not run.")
-    (ROOT / "backtest/out/flush_report.txt").write_text("\n".join(lines) + "\n")
+    (ROOT / "backtest/reports/flush_report.txt").write_text("\n".join(lines) + "\n")
     print(lines[-1])
 
 
