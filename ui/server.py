@@ -103,19 +103,45 @@ def symbol(pair: str) -> str:
     return pair.split(":")[0].replace("/", "")
 
 
-_px = {"t": 0.0, "v": {}}
+_px = {"t": 0.0, "v": {}, "chg": {}, "chg_t": 0.0, "wait": {}}
+
+
+def _binance(path: str):
+    """A list from Binance, or None. After a rate-limit answer (429/418) nothing is asked until Retry-After has passed."""
+    if time.time() < _px["wait"].get(path, 0):
+        return None
+    try:
+        r = requests.get("https://fapi.binance.com" + path, timeout=6)
+        if r.status_code in (418, 429):
+            _px["wait"][path] = time.time() + float(r.headers.get("Retry-After") or 60)
+            print("binance rate limit", path, r.status_code, "waiting", r.headers.get("Retry-After"), flush=True)
+            return None
+        data = r.json()
+        return data if isinstance(data, list) else None
+    except (requests.RequestException, ValueError):
+        return None
 
 
 def prices() -> dict:
-    if time.time() - _px["t"] > 2:
+    """Last price every 2 s from the light price endpoint (weight 2); the 24h change once a minute (weight 40).
+    Asking the 24h endpoint every 2 s used 1,200 weight a minute and got this address banned for minutes at a time."""
+    now = time.time()
+    if now - _px["t"] > 2:
+        _px["t"] = now                                  # also spaces out retries after a failure
+        want = {symbol(p): p for p in pairs()}
+        if now - _px["chg_t"] > 60:
+            _px["chg_t"] = now
+            try:
+                _px["chg"].update({want[d["symbol"]]: float(d["priceChangePercent"])
+                                   for d in _binance("/fapi/v1/ticker/24hr") or [] if d.get("symbol") in want})
+            except (KeyError, TypeError, ValueError, AttributeError):
+                pass
         try:
-            data = requests.get("https://fapi.binance.com/fapi/v1/ticker/24hr", timeout=6).json()
-            want = {symbol(p): p for p in pairs()}
-            _px["v"] = {want[d["symbol"]]: {"last": float(d["lastPrice"]),
-                                            "chg": float(d["priceChangePercent"])}
-                        for d in data if d["symbol"] in want}
-            _px["t"] = time.time()
-        except (requests.RequestException, ValueError, KeyError):
+            v = {want[d["symbol"]]: {"last": float(d["price"]), "chg": _px["chg"].get(want[d["symbol"]], 0.0)}
+                 for d in _binance("/fapi/v2/ticker/price") or [] if d.get("symbol") in want}
+            if v:
+                _px["v"] = v
+        except (KeyError, TypeError, ValueError, AttributeError):
             pass
     return _px["v"]
 
