@@ -457,10 +457,11 @@ def candles(pair: str, tf: str = "15m"):
         raise HTTPException(400, "Unknown pair or timeframe")
     try:
         rows = requests.get("https://fapi.binance.com/fapi/v1/klines",
-                            params={"symbol": symbol(pair), "interval": tf, "limit": 400},
+                            params={"symbol": symbol(pair), "interval": tf, "limit": 1000},
                             timeout=8).json()
         return [{"time": r[0] // 1000, "open": float(r[1]), "high": float(r[2]),
-                 "low": float(r[3]), "close": float(r[4])} for r in rows]
+                 "low": float(r[3]), "close": float(r[4]),
+                 "volume": float(r[5]), "buy": float(r[9])} for r in rows]
     except (requests.RequestException, ValueError, TypeError, IndexError):
         raise HTTPException(502, "Could not load prices from Binance")
 

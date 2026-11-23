@@ -86,7 +86,7 @@ button{cursor:pointer}
 .seg{display:inline-flex;background:var(--sunk);border-radius:8px;padding:3px;gap:2px}
 .seg button{border:0;background:transparent;border-radius:6px;padding:4px 10px;font-size:.84rem;font-weight:500;color:var(--muted)}
 .seg button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(20,30,50,.14)}
-#chart{height:440px}
+#chart{height:480px}
 .lvbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 8px;font-size:.82rem;color:var(--muted)}
 .lvbar button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:3px 9px;font-size:.8rem;font-weight:500}
 .lvbar button[aria-pressed=true]{background:var(--sunk);color:var(--ink);border-color:transparent}
@@ -94,6 +94,12 @@ button{cursor:pointer}
 .zones{margin-top:10px;font-size:.84rem}
 .zones table td{padding:4px 8px 4px 0}
 .zones .str{display:inline-flex;gap:2px} .zones .str b{width:6px;height:10px;border-radius:2px;background:var(--accent);display:inline-block}
+/* chart */
+.chart-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:0 0 6px;font-size:.78rem;color:var(--muted)}
+.chart-legend b{font-weight:600;color:var(--ink)} .chart-legend .up{color:var(--up)} .chart-legend .down{color:var(--down)}
+.chart-legend .band{display:inline-block;width:14px;height:8px;border-radius:2px;background:rgba(59,76,202,.25);vertical-align:middle;margin-right:3px}
+.chart-legend button{border:0;background:transparent;color:var(--accent);font:inherit;padding:0;cursor:pointer}
+#chart.pick{cursor:pointer}
 
 /* ticket */
 .side{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
@@ -237,6 +243,7 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
           <div class="seg" id="tfs"></div>
         </div>
         <div class="lvbar" id="lvbar"></div>
+        <div class="chart-legend" id="chartLegend"></div>
         <div class="hint muted" id="chartMsg" style="font-size:.82rem;min-height:0"></div>
         <div id="chart"></div>
         <div class="zones" id="zonesBox"></div>
@@ -473,16 +480,44 @@ async function post(url, body) {
 }
 
 /* ---------- chart ---------- */
+// The mouse wheel scrolls the page, not the chart. Drag pans; Ctrl/Alt/Cmd + wheel, a trackpad pinch or the axes zoom.
+const SCROLL = {mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false};
+const SCALE = {mouseWheel: false, pinch: true, axisPressedMouseMove: true, axisDoubleClickReset: true};
+let volSeries, zoneSeries = [], chartBars = [];
 function initChart() {
   chart = LightweightCharts.createChart($('chart'), {
     autoSize: true,
     layout: {background: {color: 'transparent'}, textColor: css('--muted'), fontFamily: 'Instrument Sans, system-ui, sans-serif'},
     grid: {vertLines: {color: css('--sunk')}, horzLines: {color: css('--sunk')}},
-    rightPriceScale: {borderColor: css('--line')}, timeScale: {borderColor: css('--line'), timeVisible: true},
-    crosshair: {mode: 0},
+    rightPriceScale: {borderColor: css('--line'), scaleMargins: {top: 0.1, bottom: 0.1}}, timeScale: {borderColor: css('--line'), timeVisible: true},
+    crosshair: {mode: 0}, handleScroll: SCROLL, handleScale: SCALE,
   });
+  // Volume and zone bands are added first so they sit behind the candles; neither moves the price scale.
+  volSeries = chart.addHistogramSeries({priceScaleId: 'vol', priceFormat: {type: 'volume'}, lastValueVisible: false, priceLineVisible: false});
+  volSeries.priceScale().applyOptions({scaleMargins: {top: 0.8, bottom: 0}});
+  zoneSeries = [0, 1, 2, 3].map(() => chart.addBaselineSeries({lineWidth: 1, topLineColor: 'transparent', bottomLineColor: 'transparent',
+    bottomFillColor1: 'transparent', bottomFillColor2: 'transparent', priceLineVisible: false, lastValueVisible: false,
+    crosshairMarkerVisible: false, autoscaleInfoProvider: () => null}));
   series = chart.addCandlestickSeries({upColor: css('--up'), downColor: css('--down'), wickUpColor: css('--up'),
     wickDownColor: css('--down'), borderVisible: false});
+  chart.subscribeClick(chartClick);
+  chart.subscribeCrosshairMove(p => $('chart').classList.toggle('pick', String(p.hoveredObjectId || '').startsWith('t:')));
+  $('chart').addEventListener('wheel', e => {
+    if (!(e.ctrlKey || e.metaKey || e.altKey)) return;
+    e.preventDefault();
+    const ts = chart.timeScale(), r = ts.getVisibleLogicalRange(); if (!r) return;
+    const at = ts.coordinateToLogical(e.clientX - $('chart').getBoundingClientRect().left) ?? r.to;
+    const f = Math.min(1.5, Math.max(0.67, Math.exp(e.deltaY * 0.003)));
+    if (f < 1 && (r.to - r.from) * f < 15) return;
+    ts.setVisibleLogicalRange({from: at - (at - r.from) * f, to: at + (r.to - at) * f});
+  }, {passive: false});
+}
+function drawVolume(d) {
+  const has = d?.length && d[0].volume != null;
+  const rgba = (hex, a) => { const n = parseInt(hex.replace('#', ''), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+  const up = rgba(css('--up'), 0.3), dn = rgba(css('--down'), 0.3);
+  volSeries.setData(has ? d.map(c => ({time: c.time, value: c.volume, color: c.close >= c.open ? up : dn})) : []);
+  chart.priceScale('right').applyOptions({scaleMargins: {top: 0.1, bottom: has ? 0.24 : 0.1}});
 }
 /* ---------- your levels (ui/levels.py) ---------- */
 const LV_COLORS = {'1M': '#A855F7', '1w': '#D9A400', '1d': '#3B82F6', '4h': '#8B95A5', vah: '#16A34A', poc: null, val: '#DC2626', fib: '#0EA5A4', channel: '#F59E0B'};
@@ -511,17 +546,33 @@ async function loadLevels() {
 const lvColor = l => l.kind === 'open' ? LV_COLORS[l.tf] : l.kind === 'fib' ? LV_COLORS.fib : l.kind === 'channel' ? LV_COLORS.channel : (LV_COLORS[l.kind] || css('--ink'));
 const lvShort = l => l.kind === 'open' ? ({'1M': 'M', '1w': 'W', '1d': 'D', '4h': '4h'}[l.tf] + ' open' + (l.touches ? ' ·' + l.touches : '')) :
   l.kind === 'fib' ? l.label.replace(' Fib ', ' ') : l.label;
+const lvTitle = l => l.kind === 'open' ? ({'1M': 'M', '1w': 'W', '1d': 'D', '4h': '4h'}[l.tf] + (l.touches ? '·' + l.touches : '')) :
+  l.kind === 'fib' ? ({'1w': 'W', '1d': 'D'}[l.tf] || l.tf) + ' ' + String(l.ratio ?? '').replace(/^0\./, '.') :
+  ['vah', 'val', 'poc'].includes(l.kind) ? l.kind.toUpperCase() : l.label;
+/* The nearest 2 strong zones above and the nearest 2 below the price, as faint bands. */
+function drawZones(candles) {
+  candles = candles?.length ? candles : chartBars;
+  const on = LV && lvKey === pair && lvOn.zones && candles?.length && candleKey === pair + tf;
+  const z = on ? LV.zones.filter(q => q.strength >= 2) : [], px = on ? candles[candles.length - 1].close : 0;
+  const near = [...z.filter(q => q.price > px).sort((a, b) => a.price - b.price).slice(0, 2),
+    ...z.filter(q => q.price <= px).sort((a, b) => b.price - a.price).slice(0, 2)];
+  zoneSeries.forEach((s, i) => {
+    const q = near[i]; if (!q) return s.setData([]);
+    const pad = Math.max((q.high - q.low) / 2, q.price * (LV.width || 0.004) / 2), a = Math.min(0.2, 0.04 + 0.03 * q.strength);
+    s.applyOptions({baseValue: {type: 'price', price: q.price - pad}, topFillColor1: `rgba(59,76,202,${a})`, topFillColor2: `rgba(59,76,202,${a})`});
+    s.setData([{time: candles[0].time, value: q.price + pad}, {time: candles[candles.length - 1].time, value: q.price + pad}]);
+  });
+}
 function drawLevels(candles) {
   lvLines.forEach(l => series.removePriceLine(l)); lvLines = [];
-  if (!LV || lvKey !== pair) { chSeries.forEach(s => s.setData([])); $('zonesBox').innerHTML = ''; return; }
+  if (!candleKey && volSeries) volSeries.setData([]);    // the coin changed: the old coin's volume goes too
+  if (!LV || lvKey !== pair) { chSeries.forEach(s => s.setData([])); drawZones(); $('zonesBox').innerHTML = ''; return; }
   const group = l => l.kind === 'open' ? (l.tf !== '4h' && !l.touches ? 'key' : 'opens') : l.kind === 'fib' ? 'fib' : l.kind === 'channel' ? 'channel' : 'ranges';
   LV.levels.filter(l => lvOn[group(l)]).forEach(l => lvLines.push(series.createPriceLine({price: l.price, color: lvColor(l),
     lineWidth: l.kind === 'channel' ? 2 : 1, lineStyle: l.kind === 'fib' ? 2 : l.kind === 'open' && l.touches ? 3 : 0,
-    axisLabelVisible: group(l) === 'key' || l.kind === 'channel', title: lvShort(l)})));
+    axisLabelVisible: group(l) === 'key' || l.kind === 'channel', title: lvTitle(l)})));
   const strong = LV.zones.filter(z => z.strength >= 2);
-  if (lvOn.zones) strong.forEach(z => lvLines.push(series.createPriceLine({price: z.price,
-    color: 'rgba(59,76,202,' + Math.min(0.55, 0.12 * z.strength) + ')', lineWidth: 4, lineStyle: 0, axisLabelVisible: false, title: 'Zone ' + z.strength})));
-  drawChannel(candles);
+  drawChannel(candles); drawZones(candles);
   const px = LV.price, near = strong.filter(z => Math.abs(z.price - px) / px < 0.08).sort((a, b) => b.price - a.price);
   $('zonesBox').innerHTML = !lvOn.zones || !near.length ? '' : `<div class="muted" style="margin-bottom:4px">Zones within 8% of the price, where 2 or more of your levels sit within ${(LV.width * 100).toFixed(1)}% of each other</div>
     <div class="scroll"><table><tbody>` + near.map(z => `<tr><td><b>${fp(z.low)}${z.high > z.low ? ' – ' + fp(z.high) : ''}</b></td>
@@ -551,14 +602,16 @@ async function loadCandles(fit) {
     if (key !== pair + tf || drag) return;
     const p = d[d.length - 1].close;
     series.applyOptions({priceFormat: {type: 'price', precision: dec(p), minMove: Math.pow(10, -dec(p))}});
-    series.setData(d);
-    drawChannel(d);
+    series.setData(d); chartBars = d;
+    drawVolume(d); drawChannel(d);
     if (fit || candleKey !== key) {
       // A price axis that was dragged stays on the old coin's range and leaves the new candles off screen.
       chart.priceScale('right').applyOptions({autoScale: true});
-      chart.timeScale().fitContent();
+      // Open on the latest bars at a readable width; older ones are a drag away.
+      if (d.length > 200) chart.timeScale().setVisibleLogicalRange({from: d.length - 180, to: d.length + 3});
+      else chart.timeScale().fitContent();
     }
-    candleKey = key; chartMsg('');
+    candleKey = key; chartMsg(''); drawZones(d); drawMarkers();
   } catch (e) {
     if (key !== pair + tf) return;
     if (candleKey !== key) { series.setData([]); chartMsg('Could not load the chart. Trying again.'); }
@@ -570,32 +623,111 @@ const mine = t => /^m\d+$/.test(String(t.trade_id));      // a trade held by the
 const KEYS = ['tp', 'tp2', 'tp3'];
 const src = t => t.by === 'ai' ? 'ai' : t.by === 'scalp' ? 'scalp' : isManual(t) ? 'you' : 'bot';
 const who = t => `<span class="tag ${src(t) === 'bot' ? '' : src(t)}">${{ai: 'AI', you: 'You', bot: 'Bot', scalp: 'Scalp'}[src(t)]}</span>`;
+const WHO = {ai: 'AI', you: 'You', bot: 'Bot', scalp: 'Scalp'};
+const TF_S = {'1m': 60, '5m': 300, '15m': 900, '1h': 3600, '4h': 14400, '1d': 86400};
+/* One selected trade shows its entry, stop, targets and liquidation; with none selected the chart shows the
+   average entry per side. The trade tables call selectTrade(t.trade_id) and read window.selTrade. */
+let selTrade = null, mkHits = [];
+window.selTrade = null;
+function setSel(id) { selTrade = id == null || id === '' ? null : String(id); window.selTrade = selTrade; }
+const findTrade = id => id == null || !S ? null :
+  (S.open || []).find(t => String(t.trade_id) === id) || (S.closed || []).find(t => String(t.trade_id) === id) || null;
+function selectTrade(id) {
+  setSel(id);
+  const t = findTrade(selTrade);
+  if (t && t.pair !== pair) pick(t.pair);                // switches the chart to the trade's coin, which redraws the lines
+  else drawLines();
+  try { document.dispatchEvent(new CustomEvent('seltrade', {detail: selTrade})); } catch (e) {}
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && selTrade && !document.querySelector('dialog[open]')) selectTrade(null); });
+$('chartLegend').onclick = e => { if (e.target.closest('[data-unsel]')) selectTrade(null); };
 function drawLines() {
+  drawMarkers();
   if (drag) return;
   lines.forEach(l => series.removePriceLine(l)); lines = []; handles = [];
-  const add = (price, color, title, style = 2, h) => { if (!price) return;
+  const add = (price, color, title, style = 2, h) => { if (!price || !isFinite(price)) return;
     const line = series.createPriceLine({price, color, lineWidth: 1, lineStyle: style, axisLabelVisible: true, title});
     lines.push(line); if (h) handles.push({...h, price, line}); };
-  const here = (S?.open || []).filter(t => t.pair === pair), many = here.length > 1;
-  here.forEach(t => {
-    const n = many ? ' ' + (mine(t) ? t.trade_id : 'bot') : '';
-    add(t.open_rate, css('--accent'), 'Entry' + n + (many ? (t.is_short ? ' short' : ' long') : ''), 0);
-    if (mine(t)) {
-      add(t.stop_loss_abs, css('--down'), 'Stop' + n, 2, {t, field: 'sl'});
-      t.tps.forEach((v, i) => add(v, css('--up'), 'TP' + (i + 1) + n, 2, {t, field: KEYS[i]}));
-      add(t.liq, css('--warn'), 'Liquidation' + n, 1);
-    } else {
-      add(t.stop_loss_abs, css('--down'), many ? '' : 'Stop');
-      add(tagVal(t, 'tp'), css('--up'), many ? '' : 'Target');
-    }
-  });
+  let t = findTrade(selTrade);
+  if (selTrade && Array.isArray(S?.open) && (!t || t.pair !== pair)) { setSel(null); t = null; }   // the trade is gone, or the coin changed
+  const open = !!t && (S.open || []).includes(t);
+  if (t) {
+    const edit = open && mine(t);
+    add(t.open_rate, css('--accent'), 'Entry ' + (t.is_short ? 'short' : 'long'), 0);
+    if (open) {
+      add(t.stop_loss_abs, css('--down'), 'Stop', 2, edit && {t, field: 'sl'});
+      (mine(t) ? t.tps || [] : [tagVal(t, 'tp')]).forEach((v, i) => add(v, css('--up'), mine(t) ? 'TP' + (i + 1) : 'Target', 2, edit && {t, field: KEYS[i]}));
+      add(t.liq || t.liquidation_price, css('--warn'), 'Liq', 1);
+    } else add(t.close_rate, t.close_profit_abs > 0 ? css('--up') : css('--down'), 'Exit', 2);
+  } else {
+    const here = (S?.open || []).filter(x => x.pair === pair);
+    [[false, 'long'], [true, 'short']].forEach(([sh, word]) => {
+      const g = here.filter(x => !!x.is_short === sh); if (!g.length) return;
+      const w = g.map(x => x.amount || (x.notional && x.open_rate ? x.notional / x.open_rate : 0) || 1);
+      add(g.reduce((s, x, i) => s + x.open_rate * w[i], 0) / w.reduce((a, b) => a + b, 0), css('--accent'), `Avg ${word} ×${g.length}`, 0);
+    });
+  }
   add(parseFloat($('sl').value), css('--down'), 'Stop (draft)', 3);
   ['tp', 'tp2', 'tp3'].forEach((k, i) => add(parseFloat($(k).value), css('--up'), `TP${i + 1} (draft)`, 3));
+  const html = t ? `<span><b>${esc(String(t.trade_id))}</b> · ${WHO[src(t)]} ${t.is_short ? 'short' : 'long'} from ${fp(t.open_rate)}${open ? '' : ' (closed)'}` +
+      `${open && mine(t) ? ' · drag its stop or a target to move it' : ''}</span><button type="button" data-unsel>Show all trades (Esc)</button>` :
+    `<span><span class="up">▲</span> long entry</span><span><span class="down">▼</span> short entry</span><span>● exit, with profit</span>` +
+    `<span>grey: lab bots</span><span><i class="band"></i>your nearest zones</span><span>Click a trade to see its stop and targets</span>`;
+  if ($('chartLegend').innerHTML !== html) $('chartLegend').innerHTML = html;
 }
-/* Drag a stop or take profit line of your own trade on the chart. */
+/* Arrows where trades opened, circles where they closed, snapped to the candle that holds the time. */
+function barAt(sec) {
+  const b = chartBars, n = b.length;
+  if (!n || !(sec >= b[0].time) || sec >= b[n - 1].time + (TF_S[tf] || 60)) return null;
+  let lo = 0, hi = n - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (b[m].time <= sec) lo = m; else hi = m - 1; }
+  return b[lo];
+}
+function drawMarkers() {
+  if (!series) return;
+  if (candleKey !== pair + tf || !chartBars.length) { series.setMarkers([]); mkHits = []; return; }
+  const up = css('--up'), dn = css('--down'), mu = css('--muted'), out = [], hits = [], seen = new Set();
+  const num = v => (v > 0 ? '+' : '') + (Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(1));
+  const put = (sec, m, id) => { const b = barAt(sec); if (!b) return;
+    out.push({time: b.time, ...m}); if (id) hits.push({time: b.time, id, y: m.position === 'aboveBar' ? b.high : b.low, above: m.position === 'aboveBar'}); };
+  const open = S?.open || [];
+  [...open, ...(S?.closed || [])].filter(t => t.pair === pair).forEach(t => {
+    const id = String(t.trade_id), size = id === selTrade ? 2 : 1, sh = !!t.is_short;
+    if (!seen.has(id)) { seen.add(id);                   // a take-profit piece shares its id with the trade it came from
+      put(Math.floor(t.open_timestamp / 1000), {position: sh ? 'aboveBar' : 'belowBar', shape: sh ? 'arrowDown' : 'arrowUp',
+        color: sh ? dn : up, text: (sh ? 'S ' : 'L ') + WHO[src(t)], id: 't:' + id, size}, id); }
+    if (t.close_timestamp && !open.includes(t)) put(Math.floor(t.close_timestamp / 1000), {position: sh ? 'belowBar' : 'aboveBar',
+      shape: 'circle', color: t.close_profit_abs > 0 ? up : dn, text: t.close_profit_abs == null ? '' : num(t.close_profit_abs), id: 't:' + id, size}, id);
+  });
+  if (typeof LAB !== 'undefined' && LAB && Array.isArray(LAB.profiles)) LAB.profiles.forEach(p => {
+    if (p.kind === 'ledger' || !String(p.db || '').startsWith('lab/')) return;   // these profiles mirror the desk's own trades
+    (p.trades || []).filter(t => t.pair === pair).forEach(t => {
+      const sh = t.side === 'short';
+      if (t.opened) put(Math.floor(t.opened), {position: sh ? 'aboveBar' : 'belowBar', shape: sh ? 'arrowDown' : 'arrowUp', color: mu, text: (sh ? 'S ' : 'L ') + p.id});
+      if (!t.open && t.closed) put(Math.floor(t.closed), {position: sh ? 'belowBar' : 'aboveBar', shape: 'circle', color: mu, text: t.pnl == null ? '' : num(t.pnl)});
+    });
+  });
+  out.sort((a, b) => a.time - b.time);
+  series.setMarkers(out); mkHits = hits;
+}
+/* Click a marker (or just next to one) to select its trade; click anywhere else to clear. */
+function chartClick(p) {
+  if (drag || !p.point) return;
+  const hid = String(p.hoveredObjectId || '');
+  if (hid.startsWith('t:')) return selectTrade(hid.slice(2));
+  const ts = chart.timeScale(); let best = null, gap = Infinity;
+  mkHits.forEach(m => {
+    const x = ts.timeToCoordinate(m.time), y = series.priceToCoordinate(m.y); if (x == null || y == null) return;
+    const dx = Math.abs(x - p.point.x), dy = (m.above ? y - 14 : y + 14) - p.point.y;
+    if (dx > 10 || Math.abs(dy) > 26) return;
+    if (dx * dx + dy * dy < gap) { gap = dx * dx + dy * dy; best = m; }
+  });
+  if (best || selTrade) selectTrade(best ? best.id : null);
+}
+/* Drag a stop or take profit line of the selected trade on the chart. */
 function nearHandle(y) {
   let best = null, gap = 7;
-  handles.forEach(h => { const c = series.priceToCoordinate(h.price); if (c != null && Math.abs(c - y) < gap) { gap = Math.abs(c - y); best = h; } });
+  handles.filter(h => selTrade != null && String(h.t.trade_id) === selTrade).forEach(h => { const c = series.priceToCoordinate(h.price); if (c != null && Math.abs(c - y) < gap) { gap = Math.abs(c - y); best = h; } });
   return best;
 }
 function chartY(e) { return e.clientY - $('chart').getBoundingClientRect().top; }
@@ -615,7 +747,7 @@ function initDrag() {
   window.addEventListener('mouseup', async () => {
     if (!drag) return;
     const d = drag; drag = null;
-    chart.applyOptions({handleScroll: true, handleScale: true});
+    chart.applyOptions({handleScroll: SCROLL, handleScale: SCALE});
     if (d.value !== d.price) {
       try { await post('/api/modify', {trade_id: d.t.trade_id, [d.field]: d.value}); toast(`${d.field === 'sl' ? 'Stop' : 'Take profit'} moved to ${fp(d.value)}`); }
       catch (err) { toast(err.message, true); }
