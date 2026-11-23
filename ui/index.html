@@ -552,7 +552,9 @@ function initChart() {
     const at = ts.coordinateToLogical(e.clientX - $('chart').getBoundingClientRect().left) ?? r.to;
     const f = Math.min(1.5, Math.max(0.67, Math.exp(e.deltaY * 0.003)));
     if (f < 1 && (r.to - r.from) * f < 15) return;
-    ts.setVisibleLogicalRange({from: at - (at - r.from) * f, to: at + (r.to - at) * f});
+    const n = series.data().length;                       // never zoom out past the loaded candles
+    if (f > 1 && (r.to - r.from) * f > n + 5) return ts.setVisibleLogicalRange({from: 0, to: n + 3});
+    ts.setVisibleLogicalRange({from: Math.max(-5, at - (at - r.from) * f), to: at + (r.to - at) * f});
   }, {passive: false});
 }
 function drawVolume(d) {
@@ -617,12 +619,20 @@ function drawLevels(candles) {
   const strong = LV.zones.filter(z => z.strength >= 2);
   drawChannel(candles); drawZones(candles);
   const px = LV.price, near = strong.filter(z => Math.abs(z.price - px) / px < 0.08).sort((a, b) => b.price - a.price);
-  $('zonesBox').innerHTML = !lvOn.zones || !near.length ? '' : `<div class="muted" style="margin-bottom:4px">Zones within 8% of the price, where 2 or more of your levels sit within ${(LV.width * 100).toFixed(1)}% of each other</div>
+  // Folded by default so the open trades sit right under the chart; the open state is remembered.
+  const above = near.filter(z => z.price > px).at(-1), below = near.find(z => z.price <= px);
+  const gap = z => z ? (Math.abs(z.price - px) / px * 100).toFixed(1) + '%' : '–';
+  $('zonesBox').innerHTML = !lvOn.zones || !near.length ? '' : `<details id="zonesDet" ${zonesOpen ? 'open' : ''}><summary class="muted" style="cursor:pointer">
+    ${near.length} zones within 8% · nearest above ${above ? fp(above.price) + ' (' + gap(above) + ')' : '–'} · nearest below ${below ? fp(below.price) + ' (' + gap(below) + ')' : '–'}</summary>
+    <div class="muted" style="margin:6px 0 4px">Zones where 2 or more of your levels sit within ${(LV.width * 100).toFixed(1)}% of each other</div>
     <div class="scroll"><table><tbody>` + near.map(z => `<tr><td><b>${fp(z.low)}${z.high > z.low ? ' – ' + fp(z.high) : ''}</b></td>
     <td class="${z.price > px ? 'down' : 'up'}">${z.price > px ? 'above' : 'below'}, ${(Math.abs(z.price - px) / px * 100).toFixed(1)}%</td>
     <td><span class="str">${'<b></b>'.repeat(Math.min(z.strength, 8))}</span> ${z.strength}</td>
-    <td class="muted">${z.levels.map(l => esc(lvShort(l))).join(', ')}</td></tr>`).join('') + '</tbody></table></div>';
+    <td class="muted">${z.levels.map(l => esc(lvShort(l))).join(', ')}</td></tr>`).join('') + '</tbody></table></div></details>';
 }
+var zonesOpen = (() => { try { return localStorage.zonesOpen === '1'; } catch (e) { return false; } })();
+$('zonesBox').addEventListener('toggle', e => { if (e.target.id !== 'zonesDet') return; zonesOpen = e.target.open;
+  try { localStorage.zonesOpen = zonesOpen ? '1' : '0'; } catch (err) {} }, true);
 function drawChannel(candles) {
   const ch = LV?.channel;
   candles = candles || drawChannel.last; if (candles) drawChannel.last = candles;
@@ -681,6 +691,7 @@ function selectTrade(id) {
   if (t && t.pair !== pair) pick(t.pair);                // switches the chart to the trade's coin, which redraws the lines
   else drawLines();
   try { document.dispatchEvent(new CustomEvent('seltrade', {detail: selTrade})); } catch (e) {}
+  if (S && typeof renderOpen === 'function') renderOpen();   // highlight the row now, not at the next refresh
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && selTrade && !document.querySelector('dialog[open]')) selectTrade(null); });
 $('chartLegend').onclick = e => { if (e.target.closest('[data-unsel]')) selectTrade(null); };
@@ -1125,6 +1136,9 @@ function ticket() {
   let note = 'Paper trade, simulated by the desk at the current price with fees. It is separate from the bot\'s trades.';
   if (held) note = `${held} open ${held === 1 ? 'trade' : 'trades'} on ${name(pair)} already. This one is added next to ${held === 1 ? 'it' : 'them'}. ` + note;
   if (locked) { note = 'Trading is stopped for today. Resume it in the Today bar at the top first.'; ok = false; }
+  const handCoin = (S.pairs || []).includes(pair);   // the server takes hand trades, odds and AI questions on the main coins only
+  if (!handCoin) { note = `Only the scalp bot trades ${name(pair)}. Your own trades, the odds replay and AI questions work on ${S.pairs.map(name).join(', ')}.`; ok = false; }
+  $('oddsBtn').disabled = !handCoin; $('aiAsk').disabled = !handCoin;
   $('ticketNote').textContent = note; b.disabled = !ok;
   drawLines();
 }
@@ -1320,7 +1334,6 @@ function route() {
   document.querySelectorAll('#nav a').forEach(a => a.getAttribute('href') === '#' + v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
   document.title = VIEWS[v] + ' · Trading desk';
   if (v !== 'desk' && !$('ticketDrawer').hidden) closeDrawer();
-  if (v === 'desk' && chart) chart.timeScale().fitContent();
   // On a cold load the tables above the target are still empty, so jump again once they have loaded, unless the page was scrolled since.
   if (jump) { let n = 0, y = -1; const go = () => { if (n && scrollY !== y) return; jumpTo(jump, true); y = scrollY; if (++n < 5) setTimeout(go, 1000); }; setTimeout(go); }
   else if (route.v && route.v !== v) scrollTo(0, 0);
