@@ -387,7 +387,7 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
         <div class="field"><label for="scalpMax">Trades it may hold at once</label>
           <input type="number" id="scalpMax" step="1" min="1" max="100"></div>
         <div id="scalpPairs" style="font-size:.84rem"></div>
-        <p class="note">Paper money, in its own account. It trades zones of strength 2 or more, with the stop one ATR beyond the zone, targets at 1, 2 and 3 times the risk, and the stop moved to entry after the first target. In the backtest every one of these signals lost money after fees on 5m and 15m candles. It switches itself off after 200 closed trades if it is losing.</p>
+        <p class="note">Paper money, in its own account. It trades zones of strength 2 or more, with the stop one ATR beyond the zone (signals with a stop nearer than 0.8% or farther than 3% are skipped), targets at 1, 2 and 3 times the risk, and the stop moved to entry after the second target. There is no time limit: a trade stays open until its stop or its last target is reached. In the backtest every one of these signals lost money after fees on 5m and 15m candles. It switches itself off after 200 closed trades if it is losing.</p>
       </section>
       <section class="panel">
         <h2>Daily limits</h2>

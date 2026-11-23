@@ -11,7 +11,6 @@ import numpy as np
 
 SEC = {"1m": 60, "5m": 300, "15m": 900}
 WAIT = {"1m": 60, "5m": 36, "15m": 24}                  # candles a signal may take after the touch
-HOLD = {"1m": 4 * 3600, "5m": 24 * 3600, "15m": 60 * 3600}   # a trade is closed after this many seconds
 MIN_STOP = {"1m": 0.0015, "5m": 0.002, "15m": 0.003}    # smallest stop distance, as a fraction of price
 ZT, ZWIN, ATR_N = 1.5, 288, 144
 TRIGGERS = ("flip", "absorb", "ddiv")

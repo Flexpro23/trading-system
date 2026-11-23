@@ -44,6 +44,7 @@ DEFAULTS = {
     "scalp_on": False, "scalp_tf": "15m", "scalp_trigger": "flip", "scalp_risk_pct": 0.25, "scalp_max_trades": 6,
 }
 DESK_ACCOUNTS = ("you", "ai", "scalp")
+SCALP_MIN_DIST = 0.008       # signals with a stop nearer than this are skipped: fees are too large a share of the risk
 SCALP_STOP_AFTER = 200       # closed scalp positions after which a losing scalp bot switches itself off
 LIMITS = {"risk_pct": (0.1, 3.0), "max_bot_trades": (0, 100), "manual_leverage": (1.0, 10.0),
           "daily_target_pct": (0.0, 50.0), "daily_loss_pct": (0.0, 50.0),
@@ -178,7 +179,7 @@ def m_init():
         c.execute("""create table if not exists ai (id integer primary key autoincrement, asked real, pair text,
             question text, context text, answer text, answered real)""")
         for col, typ in (("tp2", "real"), ("tp3", "real"), ("parent", "integer"), ("by", "text default 'you'"),
-                         ("be", "integer default 0"),      # 1 = move the stop to entry after the first take profit
+                         ("be", "integer default 0"),      # 1 = move the stop to entry after the first take profit, 2 = after the second
                          ("tf", "text")):                  # candle size of the scalp signal that opened it
             if col not in have:
                 c.execute(f"alter table pos add column {col} {typ}")
@@ -234,7 +235,8 @@ def m_reduce(pid: int, price: float, reason: str, frac: float = 1.0, when: float
         if slot:
             c.execute(f"update pos set {slot}=null where id=?", (pid,))
             behind = r["sl"] < r["entry"] if r["side"] == "long" else r["sl"] > r["entry"]
-            if r["be"] and behind:          # a target was taken: the rest can no longer lose more than fees
+            # be=1: after the first target; be=2 (scalp bot): after the second. The rest can then no longer lose more than fees.
+            if behind and (r["be"] == 1 or (r["be"] == 2 and slot == "tp2")):
                 c.execute("update pos set sl=? where id=?", (r["entry"], pid))
         return True
 
@@ -929,6 +931,8 @@ def s_enter(pair: str, sig: dict, tf: str, c: dict) -> str:
     stop = min(sig["stop"], px * (1 - scalp.MIN_STOP[tf])) if up else max(sig["stop"], px * (1 + scalp.MIN_STOP[tf]))
     dist = abs(px - stop) / px
     liq = liq_price(px, sig["side"], lev)
+    if dist < SCALP_MIN_DIST:
+        return f"signal skipped: stop {dist:.2%} away is too tight (minimum {SCALP_MIN_DIST:.1%})"
     if dist > 0.03 or ((stop <= liq) if up else (stop >= liq)):
         return f"signal skipped: stop {dist:.2%} away is too wide"
     acct = account(prices())["accounts"]["scalp"]
@@ -938,7 +942,7 @@ def s_enter(pair: str, sig: dict, tf: str, c: dict) -> str:
     r = abs(px - stop)
     tps = [px + n * r if up else px - n * r for n in (1, 2, 3)]
     with _mlock, mdb() as db:
-        db.execute("insert into pos (pair, side, qty, entry, sl, tp, tp2, tp3, risk_pct, lev, opened, by, be, tf) values (?,?,?,?,?,?,?,?,?,?,?,?,1,?)",
+        db.execute("insert into pos (pair, side, qty, entry, sl, tp, tp2, tp3, risk_pct, lev, opened, by, be, tf) values (?,?,?,?,?,?,?,?,?,?,?,?,2,?)",
                    (pair, sig["side"], notional / px, px, stop, tps[0], tps[1], tps[2], c["scalp_risk_pct"], lev, time.time(), "scalp", tf))
     return f"opened {sig['side']} at {px:g}, stop {stop:g} ({sig['why']})"
 
@@ -952,10 +956,6 @@ def s_tick():
     tfs = c["scalp_tf"].split("+")                   # "1m+5m" checks both candle sizes
     mine = [r for r in m_open() if r["by"] == "scalp"]
     px = prices()
-    for r in mine:                                   # time exit
-        p = px.get(r["pair"], {}).get("last")
-        if p and now - r["opened"] > scalp.HOLD[r["tf"] or tfs[-1]]:
-            m_close(r["id"], p, "time_exit")
     with mdb() as db:
         n, total = db.execute("select count(*), coalesce(sum(pnl),0) from pos where by='scalp' and closed is not null and parent is null").fetchone()
         total = db.execute("select coalesce(sum(pnl),0) from pos where by='scalp' and closed is not null").fetchone()[0]
