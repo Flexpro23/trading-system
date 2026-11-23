@@ -661,8 +661,7 @@ async function loadCandles(fit) {
       // A price axis that was dragged stays on the old coin's range and leaves the new candles off screen.
       chart.priceScale('right').applyOptions({autoScale: true});
       // Open on the latest bars at a readable width; older ones are a drag away.
-      if (d.length > 200) chart.timeScale().setVisibleLogicalRange({from: d.length - 180, to: d.length + 3});
-      else chart.timeScale().fitContent();
+      fitRecent();
     }
     candleKey = key; chartMsg(''); drawZones(d); drawMarkers();
   } catch (e) {
@@ -670,6 +669,16 @@ async function loadCandles(fit) {
     if (candleKey !== key) { series.setData([]); chartMsg('Could not load the chart. Trying again.'); }
     clearTimeout(loadCandles.t); loadCandles.t = setTimeout(() => loadCandles(fit), 2000);
   }
+}
+/* Open on the latest ~180 bars. A chart that has no width yet (page still laying out, or another tab showing)
+   would get the narrowest bar spacing and show months of empty space, so wait until it has one. */
+function fitRecent() {
+  clearTimeout(fitRecent.t);
+  const ts = chart.timeScale(), n = series.data().length;
+  if (!n) return;
+  if (!ts.width()) { fitRecent.pending = true; if (document.querySelector('[data-view="desk"].on')) fitRecent.t = setTimeout(fitRecent, 100); return; }
+  fitRecent.pending = false;
+  if (n > 200) ts.setVisibleLogicalRange({from: n - 180, to: n + 3}); else ts.fitContent();
 }
 function chartMsg(m) { $('chartMsg').textContent = m; }
 const mine = t => /^m\d+$/.test(String(t.trade_id));      // a trade held by the desk, which can be edited
@@ -1334,6 +1343,7 @@ function route() {
   document.querySelectorAll('#nav a').forEach(a => a.getAttribute('href') === '#' + v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
   document.title = VIEWS[v] + ' · Trading desk';
   if (v !== 'desk' && !$('ticketDrawer').hidden) closeDrawer();
+  if (v === 'desk' && chart && fitRecent.pending) setTimeout(fitRecent, 50);   // candles loaded while another tab was showing
   // On a cold load the tables above the target are still empty, so jump again once they have loaded, unless the page was scrolled since.
   if (jump) { let n = 0, y = -1; const go = () => { if (n && scrollY !== y) return; jumpTo(jump, true); y = scrollY; if (++n < 5) setTimeout(go, 1000); }; setTimeout(go); }
   else if (route.v && route.v !== v) scrollTo(0, 0);
