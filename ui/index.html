@@ -786,10 +786,11 @@ function renderScopeBar(rows) {
   const here = rows.filter(x => x.pair === pair), list = coinScope === 'coin' ? here : rows;
   const pnl = list.reduce((a, x) => a + (x.profit || 0), 0), coins = new Set(rows.map(x => x.pair)).size;
   const labN = list.filter(x => x.lab).length;
-  bar.innerHTML = `<div class="seg" role="group" aria-label="Which coins"><button data-scope="coin" aria-pressed="${coinScope === 'coin'}">This coin · <b>${esc(name(pair))}</b></button><button data-scope="all" aria-pressed="${coinScope === 'all'}">All coins</button></div>
+  const k = coinScope + pair + labIncl + !!LAB;                // controls rebuilt only on a change, so a click is not lost to the refresh
+  if (bar.dataset.k !== k) { bar.dataset.k = k; bar.innerHTML = `<div class="seg" role="group" aria-label="Which coins"><button data-scope="coin" aria-pressed="${coinScope === 'coin'}">This coin · <b>${esc(name(pair))}</b></button><button data-scope="all" aria-pressed="${coinScope === 'all'}">All coins</button></div>
     <label class="pcv-check"><input type="checkbox" id="pcvLab" ${labIncl ? 'checked' : ''}${LAB ? '' : ' disabled'}> Include lab trades</label>
-    <span class="spacer"></span>
-    <span class="pcv-total">${list.length} open${coinScope === 'coin' ? ' on ' + esc(name(pair)) : ` on ${coins} ${coins === 1 ? 'coin' : 'coins'}`}${labN ? ` (${labN} lab)` : ''}, net <b class="${cls(pnl)}">${money(pnl)}</b> USDT</span>`;
+    <span class="spacer"></span><span class="pcv-total"></span>`; }
+  bar.querySelector('.pcv-total').innerHTML = `${list.length} open${coinScope === 'coin' ? ' on ' + esc(name(pair)) : ` on ${coins} ${coins === 1 ? 'coin' : 'coins'}`}${labN ? ` (${labN} lab)` : ''}, net <b class="${cls(pnl)}">${money(pnl)}</b> USDT`;
 }
 function setScope(s) { coinScope = s; lsSet('coinScope', s); closedMax = 100; renderOpen(); renderClosed(); }
 function openRow(x) {
