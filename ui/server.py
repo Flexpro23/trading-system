@@ -350,6 +350,15 @@ def m_loop():
         time.sleep(2)
 
 
+def m_first_sl(r) -> float:
+    """The stop a position had when it opened. A take-profit piece keeps the stop of its moment, and a
+    move to entry only follows a take profit, so the first piece holds it. A stop edited by hand before
+    any take profit is not recorded anywhere, so then this is the current stop."""
+    with mdb() as c:
+        k = c.execute("select sl from pos where parent=? order by closed, id limit 1", (r["id"],)).fetchone()
+    return k["sl"] if k else r["sl"]
+
+
 def m_row(r, px: dict) -> dict:
     """A manual position in the same shape the page uses for bot trades."""
     is_open = r["closed"] is None
@@ -363,7 +372,8 @@ def m_row(r, px: dict) -> dict:
             "profit_ratio": pnl / (r["qty"] * r["entry"] / r["lev"]), "notional": r["qty"] * r["entry"],
             "open_timestamp": r["opened"] * 1000, "close_timestamp": (r["closed"] or 0) * 1000,
             "is_open": is_open, "by": r["by"] or "you", "liq": m_liq(r), "lev": r["lev"], "part": r["parent"] is not None,
-            "tps": [r[k] for k in SLOTS] if is_open else [], "be": bool(r["be"])}
+            "tps": [r[k] for k in SLOTS] if is_open else [], "be": bool(r["be"]),
+            "first_sl": m_first_sl(r) if is_open and r["parent"] is None else None}
 
 
 def account(px: dict) -> dict:

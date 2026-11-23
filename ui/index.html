@@ -52,11 +52,51 @@ button{cursor:pointer}
 
 /* coins */
 .coins{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px}
-.coin{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 11px;text-align:left;min-width:104px}
+.coin{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 10px;text-align:left;min-width:100px}
 .coin[aria-pressed=true]{border-color:var(--accent);background:var(--sunk);box-shadow:inset 0 0 0 1px var(--accent)}
 .coin .n{font-weight:600;font-size:.9rem;display:flex;gap:6px;align-items:center}
 .coin .p{font-size:.84rem;color:var(--muted)}
 .coin .held{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+/* per-coin view */
+.coins{scrollbar-width:thin}
+.coin .pcv-pos{font-size:.78rem;white-space:nowrap;margin-top:1px;color:var(--muted)}
+.coin .pcv-pos b{font-weight:600}
+.coin.pcv-has{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.pcv-sep{flex:0 0 1px;align-self:stretch;background:var(--line);margin:2px 3px}
+.pcv-bar{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;margin:-2px 0 10px;font-size:.86rem}
+.pcv-bar .seg b{font-weight:600}
+.pcv-check{display:flex;align-items:center;gap:6px;color:var(--ink);cursor:pointer}
+.pcv-check input{width:15px;height:15px;margin:0;accent-color:var(--accent)}
+.pcv-total{color:var(--muted)} .pcv-total b{color:var(--ink);font-weight:600}
+.pcv-open tbody tr:last-child td{border-bottom:1px solid var(--line)}
+.pcv-open tbody:last-child tr:last-child td{border-bottom:0}
+.pcv-open tr.pcv-grp td{background:var(--sunk);cursor:pointer;padding-top:7px;padding-bottom:7px}
+.pcv-open tr.pcv-grp td:first-child{padding-left:8px;border-radius:6px 0 0 6px}
+.pcv-open tr.pcv-grp td:last-child{padding-right:8px;border-radius:0 6px 6px 0}
+.pcv-open tr.pcv-grp:hover td{background:color-mix(in srgb,var(--accent) 8%,var(--sunk))}
+.pcv-car{display:inline-block;width:12px;color:var(--muted);transition:transform .15s}
+.pcv-grp.pcv-shut .pcv-car{transform:rotate(-90deg)}
+.pcv-open tr.pcv-row{cursor:pointer}
+.pcv-open tr.pcv-row:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+.pcv-open tr.pcv-sel td{background:color-mix(in srgb,var(--accent) 13%,transparent)}
+.pcv-open tr.pcv-sel td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.pcv-open td.pcv-l{text-align:left}
+.pcv-open .btn.ghost{padding:4px 9px;font-size:.8rem}
+.pcv-open th,.pcv-open td{padding-left:6px;padding-right:6px}
+.pcv-open tr>:first-child{padding-left:8px}
+.pcv-prof{max-width:104px;overflow:hidden;text-overflow:ellipsis}
+.pcv-labrow td{color:var(--muted)} .pcv-labrow td b{color:var(--ink)}
+.pcv-labrow td.up{color:var(--up)} .pcv-labrow td.down{color:var(--down)}
+.tag.pcv-lab{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.pcv-div{width:1px;background:var(--line);margin:3px 4px}
+.pcv-more{margin-top:10px}
+.card dt.pcv-span{grid-column:1/-1;margin-top:4px}
+.card dd.pcv-span{grid-column:1/-1;text-align:left}
+.pcv-coins{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:2px}
+.pcv-coins td{padding:2px 0;border:0;text-align:right}
+.pcv-coins td:first-child{text-align:left;font-weight:600;width:52px}
+.pcv-coins .pcv-bar-c{width:100%;padding:2px 8px}
+.pcv-coins i{display:block;height:6px;border-radius:3px;min-width:2px}
 .chart-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .chart-head .px{font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
 .seg{display:inline-flex;background:var(--sunk);border-radius:8px;padding:3px;gap:2px}
@@ -816,54 +856,152 @@ function renderDay() {
     $('resume').style.display = 'none';
   } else lock.className = 'lock';
 }
+/* ---------- per-coin view: coin strip, open trades by coin, lab trades ---------- */
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+let LAB = null, shownPair = null, closedMax = 100;
+let coinScope = lsGet('coinScope') === 'coin' ? 'coin' : 'all', labIncl = lsGet('labIncl') !== '0';
+let shut = (() => { try { return new Set(JSON.parse(lsGet('openShut') || '[]')); } catch (e) { return new Set(); } })();
+// Lab profiles that read the desk's own databases (the swing bot and the scalp bot): their trades are already in S.open.
+const isMirror = p => /^user_data\//.test(p.db || '');
+const age = ms => ms ? dur(Math.max(0, (Date.now() - ms) / 1000)) : '–';
+const selKey = () => { let v; try { v = typeof selTrade !== 'undefined' ? selTrade : window.selTrade; } catch (e) { v = window.selTrade; } return v == null ? null : String(v); };
+function mirrorMap() {
+  const m = new Map();
+  (LAB?.profiles || []).filter(isMirror).forEach(p => p.trades.forEach(t => m.set(String(t.id), t)));
+  return m;
+}
+// R = open profit / what the part still open risked at its first stop. A stop moved later does not change it.
+function deskR(t, mm) {
+  const s0 = t.first_sl ?? mm.get(String(t.trade_id))?.stop ?? (isManual(t) && !mine(t) ? tagVal(t, 'sl') : null);
+  const qty = mine(t) ? (t.notional || 0) / t.open_rate : t.amount;
+  const risk = s0 == null || !qty ? 0 : qty * Math.abs(t.open_rate - s0);
+  return risk > 1e-9 ? t.profit_abs / risk : null;
+}
+function openRows() {
+  const mm = mirrorMap();
+  const rows = (S.open || []).map(t => ({t, key: String(t.trade_id), pair: t.pair, short: t.is_short,
+    size: t.notional || t.stake_amount * (t.leverage || 1), profit: t.profit_abs, r: deskR(t, mm), ts: t.open_timestamp}));
+  if (LAB?.profiles && labIncl) LAB.profiles.filter(p => !isMirror(p)).forEach(p => p.trades.filter(x => x.open).forEach(x => rows.push({
+    lab: p, x, key: `lab:${p.id}:${x.id}`, pair: x.pair, short: x.side === 'short',
+    size: x.risk && x.stop != null && x.stop !== x.entry ? x.risk / Math.abs(x.entry - x.stop) * x.entry : null,
+    profit: x.pnl, r: x.r, ts: x.opened * 1000})));
+  return rows;
+}
 function renderCoins() {
-  const held = new Set((S.open || []).map(t => t.pair));
-  $('coins').innerHTML = S.pairs.map(p => {
-    const q = S.prices[p] || {};
-    return `<button class="coin" data-p="${esc(p)}" aria-pressed="${p === pair}">
-      <div class="n">${esc(name(p))}${held.has(p) ? '<span class="held" title="Open trade"></span>' : ''}</div>
-      <div class="p">${fp(q.last)} <span class="${cls(q.chg)}">${q.chg > 0 ? '+' : ''}${(q.chg ?? 0).toFixed(2)}%</span></div></button>`;
-  }).join('');
+  const by = {};
+  openRows().forEach(x => { const g = by[x.pair] || (by[x.pair] = {n: 0, pnl: 0}); g.n++; g.pnl += x.profit || 0; });
+  const list = [...new Set([...(S.scalp_pairs || []), ...S.pairs, ...Object.keys(by).sort()])];
+  list.sort((a, b) => !!by[b] - !!by[a]);                 // coins with open trades first, otherwise the usual order
+  const btn = p => { const q = S.prices[p] || {}, g = by[p];
+    return `<button class="coin${g ? ' pcv-has' : ''}" data-p="${esc(p)}" aria-pressed="${p === pair}">
+      <div class="n">${esc(name(p))}</div>
+      <div class="p">${q.last == null ? '–' : fp(q.last)} <span class="${cls(q.chg)}">${q.chg > 0 ? '+' : ''}${(q.chg ?? 0).toFixed(2)}%</span></div>
+      <div class="pcv-pos">${g ? `${g.n} open · <b class="${cls(g.pnl)}">${money(g.pnl)}</b>` : 'none open'}</div></button>`; };
+  const held = list.filter(p => by[p]), rest = list.filter(p => !by[p]);
+  $('coins').innerHTML = held.map(btn).join('') + (held.length && rest.length ? '<span class="pcv-sep"></span>' : '') + rest.map(btn).join('');
   const q = S.prices[pair] || {};
   $('px').textContent = name(pair) + ' ' + fp(q.last);
   $('chg').innerHTML = `<span class="${cls(q.chg)}">${q.chg > 0 ? '+' : ''}${(q.chg ?? 0).toFixed(2)}% today</span>`;
+  if (shownPair !== pair) {                               // the coin changed (pick): bring its button into view, re-filter the tables
+    shownPair = pair;
+    const box = $('coins'), el = box.querySelector('[aria-pressed=true]');
+    if (el) { const a = box.getBoundingClientRect(), b = el.getBoundingClientRect();
+      if (b.left < a.left || b.right > a.right) box.scrollLeft += b.left - a.left - 40; }
+    renderOpen(); renderClosed();
+  }
+}
+function renderScopeBar(rows) {
+  let bar = $('pcvBar');
+  if (!bar) {
+    bar = document.createElement('div'); bar.id = 'pcvBar'; bar.className = 'pcv-bar'; $('openBox').before(bar);
+    bar.onclick = e => { const s = e.target.closest('[data-scope]'); if (s) setScope(s.dataset.scope); };
+    bar.onchange = e => { if (e.target.id === 'pcvLab') { labIncl = e.target.checked; lsSet('labIncl', labIncl ? '1' : '0'); renderCoins(); renderOpen(); } };
+  }
+  const here = rows.filter(x => x.pair === pair), list = coinScope === 'coin' ? here : rows;
+  const pnl = list.reduce((a, x) => a + (x.profit || 0), 0), coins = new Set(rows.map(x => x.pair)).size;
+  const labN = list.filter(x => x.lab).length;
+  const k = coinScope + pair + labIncl + !!LAB;                // controls rebuilt only on a change, so a click is not lost to the refresh
+  if (bar.dataset.k !== k) { bar.dataset.k = k; bar.innerHTML = `<div class="seg" role="group" aria-label="Which coins"><button data-scope="coin" aria-pressed="${coinScope === 'coin'}">This coin · <b>${esc(name(pair))}</b></button><button data-scope="all" aria-pressed="${coinScope === 'all'}">All coins</button></div>
+    <label class="pcv-check"><input type="checkbox" id="pcvLab" ${labIncl ? 'checked' : ''}${LAB ? '' : ' disabled'}> Include lab trades</label>
+    <span class="spacer"></span><span class="pcv-total"></span>`; }
+  bar.querySelector('.pcv-total').innerHTML = `${list.length} open${coinScope === 'coin' ? ' on ' + esc(name(pair)) : ` on ${coins} ${coins === 1 ? 'coin' : 'coins'}`}${labN ? ` (${labN} lab)` : ''}, net <b class="${cls(pnl)}">${money(pnl)}</b> USDT`;
+}
+function setScope(s) { coinScope = s; lsSet('coinScope', s); closedMax = 100; renderOpen(); renderClosed(); }
+function openRow(x) {
+  const cl = `pcv-row${x.lab ? ' pcv-labrow' : ''}${x.key === selKey() ? ' pcv-sel' : ''}`;
+  const coin = `<td><b>${esc(name(x.pair))}</b> <span class="tag ${x.short ? 'short' : 'long'}">${x.short ? 'Short' : 'Long'}</span></td>`;
+  const res = `<td>${age(x.ts)}</td>`;
+  const rcell = `<td class="${cls(x.r)}" title="Profit divided by what the trade risked at its first stop">${x.r == null ? '<span class="muted">–</span>' : rr(x.r)}</td>`;
+  if (x.lab) { const l = x.x;
+    return `<tr class="${cl}" data-key="${esc(x.key)}" data-pair="${esc(x.pair)}">${coin}
+      <td><span class="tag pcv-lab">Lab</span><span class="sub pcv-prof" title="${esc(x.lab.name)}">${esc(x.lab.name)}</span></td>
+      <td>${x.size ? money(x.size, false) : '–'}</td><td>${fp(l.entry)}</td><td>${l.stop == null ? '–' : fp(l.stop)}</td>
+      <td>${l.tps?.length ? fp(l.tps[0]) : '<span class="muted">Signal exit</span>'}</td>${res}
+      <td class="${cls(x.profit)}"><b>${x.profit == null ? '–' : money(x.profit)}</b><span class="sub">before fees</span></td>${rcell}
+      <td><span class="muted" style="font-size:.8rem" title="Lab trades are read only here">Lab</span></td></tr>`;
+  }
+  const t = x.t, m = mine(t), left = m ? t.tps.map((v, i) => v ? i + 1 : 0).filter(Boolean) : [], tp = m ? t.tps.find(v => v) : tagVal(t, 'tp'), liq = m ? t.liq : t.liquidation_price;
+  return `<tr class="${cl}" data-key="${esc(x.key)}" data-pair="${esc(x.pair)}">${coin}
+    <td>${who(t)}</td>
+    <td>${money(x.size, false)}${m ? `<span class="sub">${t.lev}x</span>` : ''}</td>
+    <td>${fp(t.open_rate)}</td>
+    <td>${fp(t.stop_loss_abs)}${m && t.stop_loss_abs === t.open_rate ? '<span class="sub">at entry</span>' : ''}${liq ? '<span class="sub">liq. ' + fp(liq) + '</span>' : ''}</td>
+    <td>${tp ? fp(tp) + (left.length ? `<span class="sub">TP${left[0]}, ${left.length} left</span>` : '') : '<span class="muted">' + (isManual(t) ? 'None' : 'Bot exit rule') + '</span>'}</td>${res}
+    <td class="${cls(t.profit_abs)}"><b>${money(t.profit_abs)}</b>${t.profit_ratio != null ? `<span class="sub" title="Profit as a share of the margin put up">${(t.profit_ratio * 100).toFixed(1)}% of margin</span>` : ''}</td>${rcell}
+    <td><span class="acts">${m ? `<button class="btn ghost" data-edit="${esc(t.trade_id)}">Edit</button>` : ''}<button class="btn ghost" data-close="${esc(t.trade_id)}">Close</button></span></td></tr>`;
 }
 function renderOpen() {
-  const o = S.open || [];
+  const o = S.open || [], all = openRows();
   $('closeAll').style.display = o.length ? '' : 'none';
-  if (!o.length) { $('openBox').innerHTML = '<div class="empty">No open trades. Pick a coin and place one, or leave the bot to it.</div>'; return; }
-  $('openBox').innerHTML = `<table><thead><tr><th>Coin</th><th>Opened by</th><th>Size (USDT)</th><th>Entry</th><th>Now</th><th>Stop</th><th>Next target</th><th>Liquidation</th><th>Profit</th><th></th></tr></thead><tbody>` +
-    o.map(t => { const m = mine(t), left = m ? t.tps.map((v, i) => v ? i + 1 : 0).filter(Boolean) : [], tp = m ? t.tps.find(v => v) : tagVal(t, 'tp');
-      return `<tr>
-      <td><b>${esc(name(t.pair))}</b> <span class="tag ${t.is_short ? 'short' : 'long'}">${t.is_short ? 'Short' : 'Long'}</span></td>
-      <td>${who(t)}</td>
-      <td>${t.notional ? money(t.notional, false) : money(t.stake_amount * (t.leverage || 1), false)}${m ? `<span class="sub">${t.lev}x</span>` : ''}</td>
-      <td>${fp(t.open_rate)}</td><td>${fp(t.current_rate)}</td>
-      <td>${fp(t.stop_loss_abs)}${m && t.stop_loss_abs === t.open_rate ? '<span class="sub">at entry</span>' : ''}</td>
-      <td>${tp ? fp(tp) + (left.length ? `<span class="sub">TP${left[0]}, ${left.length} left</span>` : '') : '<span class="muted">' + (isManual(t) ? 'None' : 'Bot exit rule') + '</span>'}</td>
-      <td>${m ? fp(t.liq) : t.liquidation_price ? fp(t.liquidation_price) : ''}</td>
-      <td class="${cls(t.profit_abs)}"><b>${money(t.profit_abs)}</b> <span style="font-size:.8rem">${(t.profit_ratio * 100).toFixed(2)}%</span></td>
-      <td><span class="acts">${m ? `<button class="btn ghost" data-edit="${t.trade_id}">Edit</button>` : ''}<button class="btn ghost" data-close="${t.trade_id}">Close</button></span></td></tr>`; }).join('') + '</tbody></table>';
+  renderScopeBar(all);
+  const rows = (coinScope === 'coin' ? all.filter(x => x.pair === pair) : all).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  if (!rows.length) {
+    $('openBox').innerHTML = !all.length ? '<div class="empty">No open trades. Pick a coin and place one, or leave the bot to it.</div>'
+      : `<div class="empty">No open trades on ${esc(name(pair))}. ${all.length} open on other coins. <button class="btn ghost" data-scope="all">Show all coins</button></div>`;
+    return;
+  }
+  const head = '<table class="pcv-open"><thead><tr><th>Coin</th><th>Opened by</th><th>Size (USDT)</th><th>Entry</th><th>Stop</th><th>Next target</th><th>Open for</th><th>Profit (USDT)</th><th title="Profit divided by what the trade risked at its first stop">R</th><th></th></tr></thead>';
+  if (coinScope === 'coin') { $('openBox').innerHTML = head + '<tbody>' + rows.map(openRow).join('') + '</tbody></table>'; return; }
+  const G = {};
+  rows.forEach(x => (G[x.pair] = G[x.pair] || []).push(x));
+  const order = Object.keys(G).sort((a, b) => G[b].length - G[a].length || name(a).localeCompare(name(b)));
+  $('openBox').innerHTML = head + order.map(p => {
+    const g = G[p], closed = shut.has(p), pnl = g.reduce((a, x) => a + (x.profit || 0), 0);
+    const L = g.filter(x => !x.short), Sh = g.filter(x => x.short), sz = a => a.reduce((s, x) => s + (x.size || 0), 0), net = sz(L) - sz(Sh);
+    return `<tbody><tr class="pcv-grp${closed ? ' pcv-shut' : ''}" data-grp="${esc(p)}" aria-expanded="${!closed}">
+      <td colspan="2"><span class="pcv-car">▾</span> <b>${esc(name(p))}</b> <span class="muted">${g.length} ${g.length === 1 ? 'trade' : 'trades'}</span></td>
+      <td>${Math.abs(net) < 0.005 ? '<span class="muted">flat</span>' : `<b>${money(Math.abs(net), false)}</b><span class="sub">net ${net > 0 ? 'long' : 'short'}</span>`}</td>
+      <td colspan="4" class="pcv-l muted">${S.prices[p]?.last != null ? 'Now <b>' + fp(S.prices[p].last) + '</b> · ' : ''}${L.length ? L.length + ' long' : ''}${L.length && Sh.length ? ' · ' : ''}${Sh.length ? Sh.length + ' short' : ''}${g.some(x => x.lab) ? ' · ' + g.filter(x => x.lab).length + ' lab' : ''}</td>
+      <td class="${cls(pnl)}"><b>${money(pnl)}</b></td><td></td>
+      <td><button class="btn ghost" data-pick="${esc(p)}"${p === pair ? ' disabled' : ''}>Chart</button></td></tr>` +
+      (closed ? '' : g.map(openRow).join('')) + '</tbody>';
+  }).join('') + '</table>';
 }
+function goCoin(p) { if (p && p !== pair) pick(p); }
 function renderClosed() {
-  const all = S.closed || [];
+  const all = (S.closed || []).filter(t => coinScope !== 'coin' || t.pair === pair);
   const grp = f => all.filter(t => f === 'all' || src(t) === f);
   const stat = f => { const g = grp(f), s = g.reduce((a, t) => a + (t.close_profit_abs || 0), 0), w = g.filter(t => t.close_profit_abs > 0).length;
     return `<span>${{all: 'All', you: 'You', bot: 'Bot', ai: 'AI', scalp: 'Scalp'}[f]}: <b>${g.length}</b> ${g.length === 1 ? 'trade' : 'trades'}, <b class="${cls(s)}">${money(s)}</b> USDT${g.length ? ', ' + Math.round(w / g.length * 100) + '% won' : ''}</span>`; };
-  $('histSum').innerHTML = stat('bot') + stat('you') + (all.some(t => src(t) === 'ai') ? stat('ai') : '') + (all.some(t => src(t) === 'scalp') ? stat('scalp') : '');
+  $('histSum').innerHTML = (coinScope === 'coin' ? `<span><b>${esc(name(pair))}</b> only</span>` : '') +
+    stat('bot') + stat('you') + (all.some(t => src(t) === 'ai') ? stat('ai') : '') + (all.some(t => src(t) === 'scalp') ? stat('scalp') : '');
+  renderHist();
   const rows = grp(histFilter);
-  if (!rows.length) { $('closedBox').innerHTML = '<div class="empty">Nothing closed yet.</div>'; return; }
+  if (!rows.length) { $('closedBox').innerHTML = `<div class="empty">${coinScope === 'coin' ? 'Nothing closed on ' + esc(name(pair)) + ' among the recent trades.' : 'Nothing closed yet.'}</div>`; return; }
   const why = r => ({exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss',
     force_exit: 'Closed by you', partial_close: 'Part closed by you', manual_take_profit: 'Take profit', take_profit: 'Take profit', take_profit_1: 'Take profit 1', take_profit_2: 'Take profit 2', take_profit_3: 'Take profit 3', time_exit: 'Time limit', daily_target: 'Daily target', daily_loss: 'Daily loss limit', liquidation: 'Liquidated'}[r] || r || '');
   $('closedBox').innerHTML = `<table><thead><tr><th>Coin</th><th>Opened by</th><th>Entry</th><th>Exit</th><th>Closed</th><th>Why</th><th>Profit</th></tr></thead><tbody>` +
-    rows.slice(0, 40).map(t => `<tr>
+    rows.slice(0, closedMax).map(t => `<tr>
       <td><b>${esc(name(t.pair))}</b> <span class="tag ${t.is_short ? 'short' : 'long'}">${t.is_short ? 'Short' : 'Long'}</span></td>
       <td>${who(t)}</td>
       <td>${fp(t.open_rate)}</td><td>${fp(t.close_rate)}</td>
       <td>${new Date(t.close_timestamp).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</td>
       <td>${esc(why(t.exit_reason))}</td>
-      <td class="${cls(t.close_profit_abs)}"><b>${money(t.close_profit_abs)}</b></td></tr>`).join('') + '</tbody></table>';
+      <td class="${cls(t.close_profit_abs)}"><b>${money(t.close_profit_abs)}</b></td></tr>`).join('') + '</tbody></table>' +
+    (rows.length > closedMax ? `<button class="btn ghost pcv-more" data-more="1">Show more (${rows.length - closedMax} more)</button>` : '');
 }
+$('closedBox').addEventListener('click', e => { if (e.target.closest('[data-more]')) { closedMax += 100; renderClosed(); } });
 function renderScalp() {
   const sc = S.scalp || {}, c = S.control;
   $('scalpLine').textContent = 'Scalp bot ' + (sc.state || 'off') + (sc.note ? '. ' + sc.note : '');
@@ -917,7 +1055,7 @@ function renderAnalysis() {
       <dt>Average win</dt><dd>${opt(g.avg_win, v => money(v))}</dd><dt>Average loss</dt><dd>${opt(g.avg_loss, v => money(v))}</dd>
       <dt>Profit factor</dt><dd>${opt(g.profit_factor, v => v.toFixed(2))}</dd><dt>Fees</dt><dd>${money(g.fees, false)}</dd>
       <dt>Typical hold</dt><dd>${opt(g.median_hold_min, v => dur(v * 60))}</dd><dt>Long / short</dt><dd>${g.long} / ${g.short}</dd>
-      <dt>By coin</dt><dd>${Object.entries(g.by_coin).map(([c, v]) => `${esc(c)} <span class="${cls(v)}">${money(v)}</span>`).join(', ') || '–'}</dd>
+      <dt class="pcv-span">By coin</dt><dd class="pcv-span">${byCoin(g.by_coin)}</dd>
       <dt>How they closed</dt><dd>${Object.entries(g.exits).map(([r, n]) => esc(WHY[r] || r) + ' ' + n).join(', ') || '–'}</dd></dl>
       ${g.notes.length ? '<ul>' + g.notes.map(n => `<li>${esc(n)}</li>`).join('') + '</ul>' : ''}</div>`; }).join('') || '<div class="empty">No trades yet.</div>';
   $('anaSeg').innerHTML = [['all', 'All'], ...order.map(k => [k, G[k].label])].map(([k, l]) => `<button aria-pressed="${k === anaFilter}" data-a="${k}">${esc(l)}</button>`).join('');
@@ -931,6 +1069,11 @@ function renderAnalysis() {
       <td>${dur(p.held)}${p.open ? ' <span class="muted">open</span>' : ''}</td><td>${p.risk ? p.risk + '%' : '–'}</td><td>${p.lev}x</td>
       <td>${p.reasons.map(r => esc(WHY[r] || r)).join(' → ') || '<span class="muted">Still open</span>'}</td>
       <td class="${cls(p.open ? p.unrealized ?? p.realized : p.realized)}"><b>${money(p.realized)}</b>${p.open && p.unrealized != null ? ` <span class="muted" style="font-size:.8rem">open ${money(p.unrealized)}</span>` : ''}</td></tr>`).join('') + '</tbody></table>';
+}
+function byCoin(o) {
+  const e = Object.entries(o || {}).sort((a, b) => b[1] - a[1]), max = Math.max(...e.map(([, v]) => Math.abs(v)), 1e-9);
+  return !e.length ? '–' : '<table class="pcv-coins"><tbody>' + e.map(([c, v]) => `<tr><td>${esc(c)}</td>
+    <td class="pcv-bar-c"><i style="width:${Math.abs(v) / max * 100}%;background:var(--${v >= 0 ? 'up' : 'down'})"></i></td><td class="${cls(v)}">${money(v)}</td></tr>`).join('') + '</tbody></table>';
 }
 $('anaSeg').onclick = e => { const a = e.target.dataset.a; if (a) { anaFilter = a; renderAnalysis(); } };
 $('anaRefresh').onclick = loadAnalysis;
@@ -1031,7 +1174,7 @@ $('aiAsk').onclick = async () => {
 async function refresh() {
   try {
     const r = await fetch('/api/state'); S = await r.json();
-    if (!pair) pair = localStorage.pair && S.pairs.includes(localStorage.pair) ? localStorage.pair : S.pairs[0];
+    if (!pair) pair = localStorage.pair && (S.scalp_pairs || S.pairs).includes(localStorage.pair) ? localStorage.pair : S.pairs[0];
     renderTop(); renderDay(); renderCoins(); renderOpen(); renderClosed(); renderRules(); renderScalp(); renderAi(); renderAccounts(); ticket();
   } catch (e) {
     $('offline').className = 'offline show';
@@ -1046,8 +1189,12 @@ $('coins').onclick = e => { const b = e.target.closest('.coin'); if (b) pick(b.d
 const tfList = ['1m', '5m', '15m', '1h', '4h'];
 function renderTf() { $('tfs').innerHTML = tfList.map(t => `<button aria-pressed="${t === tf}" data-tf="${t}">${t}</button>`).join(''); }
 $('tfs').onclick = e => { const t = e.target.dataset.tf; if (t) { tf = t; localStorage.tf = t; renderTf(); loadCandles(true); } };
-function renderHist() { $('hist').innerHTML = [['all', 'All'], ['bot', 'Bot'], ['you', 'You'], ['ai', 'AI'], ['scalp', 'Scalp']].map(([k, l]) => `<button aria-pressed="${k === histFilter}" data-h="${k}">${l}</button>`).join(''); }
-$('hist').onclick = e => { const h = e.target.dataset.h; if (h) { histFilter = h; renderHist(); renderClosed(); } };
+function renderHist() {
+  const k = histFilter + coinScope + pair; if (renderHist.k === k) return; renderHist.k = k;   // rebuilt only on a change, so a click is not lost
+  $('hist').innerHTML = [['all', 'All'], ['bot', 'Bot'], ['you', 'You'], ['ai', 'AI'], ['scalp', 'Scalp']].map(([k, l]) => `<button aria-pressed="${k === histFilter}" data-h="${k}">${l}</button>`).join('') +
+    `<span class="pcv-div"></span><button aria-pressed="${coinScope === 'coin'}" data-scope="coin">${pair ? esc(name(pair)) + ' only' : 'This coin'}</button><button aria-pressed="${coinScope === 'all'}" data-scope="all">All coins</button>`;
+}
+$('hist').onclick = e => { const h = e.target.dataset.h, s = e.target.dataset.scope; if (h) { histFilter = h; renderHist(); renderClosed(); } else if (s) setScope(s); };
 $('slChips').innerHTML = [0.5, 1, 2, 3].map(v => `<button type="button" data-v="${v}">${v}%</button>`).join('');
 $('tpChips').innerHTML = [1, 2, 3].map(v => `<button type="button" data-v="${v}" title="One target at ${v} times the risk">${v}×</button>`).join('') + '<button type="button" data-v="all" title="Three targets at 1, 2 and 3 times the risk">1× 2× 3×</button>';
 $('slChips').onclick = e => { if (e.target.dataset.v) setStop(+e.target.dataset.v); };
@@ -1065,8 +1212,19 @@ $('place').onclick = async () => {
 let dlgId = null;
 const trade = id => (S.open || []).find(t => String(t.trade_id) === String(id));
 $('openBox').onclick = e => {
-  const c = e.target.dataset.close, ed = e.target.dataset.edit;
-  if (c) openClose(c); else if (ed) openEdit(ed);
+  const b = e.target.closest('button'), c = b?.dataset.close, ed = b?.dataset.edit;
+  if (c) return openClose(c);
+  if (ed) return openEdit(ed);
+  if (b?.dataset.scope) return setScope(b.dataset.scope);
+  if (b?.dataset.pick) return goCoin(b.dataset.pick);
+  if (b || e.target.closest('a,input,select,label')) return;
+  const g = e.target.closest('tr[data-grp]');
+  if (g) { const p = g.dataset.grp; shut.has(p) ? shut.delete(p) : shut.add(p); lsSet('openShut', JSON.stringify([...shut])); renderOpen(); return; }
+  const r = e.target.closest('tr[data-key]'); if (!r) return;
+  goCoin(r.dataset.pair);
+  const t = trade(r.dataset.key);                       // lab rows have no desk trade to select
+  if (t && typeof selectTrade === 'function') selectTrade(t.trade_id);
+  renderOpen();
 };
 function openClose(id) {
   const t = trade(id); if (!t) return;
@@ -1226,6 +1384,7 @@ const rr = v => v == null ? '–' : (v > 0 ? '+' : '') + v.toFixed(2) + ' R';
 const labTime = t => t ? new Date(t * 1000).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : '';
 async function loadLab() {
   let L; try { L = await (await fetch('/api/lab')).json(); } catch (e) { return; }
+  if (L?.profiles) { LAB = L; if (S) { renderCoins(); renderOpen(); } }
   const roleTag = r => r === 'Control' ? 'tag' : r === 'Failed backtest' ? 'tag short' : r === 'Experiment' || r.startsWith('New') ? 'tag ai' : 'tag long';
   $('labSum').innerHTML = `<table><thead><tr><th>Profile</th><th>Progress</th><th>Candles</th><th>Closed trades</th><th>Won</th><th>Average</th><th>Average win</th><th>Average loss</th><th>Total</th><th>Profit factor</th><th>Closed profit</th><th>Open trades</th><th>Open profit</th></tr></thead><tbody>` +
     L.profiles.map(p => { const s = p.stats; return `<tr><td><b>${esc(p.name)}</b><span class="sub"><span class="${roleTag(p.role)}">${esc(p.role)}</span> ${p.running ? '' : '<span class="tag short">Not running</span>'}</span></td>
