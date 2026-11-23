@@ -116,6 +116,13 @@ button{cursor:pointer}
 .chart-legend .band{display:inline-block;width:14px;height:8px;border-radius:2px;background:rgba(59,76,202,.25);vertical-align:middle;margin-right:3px}
 .chart-legend button{border:0;background:transparent;color:var(--accent);font:inherit;padding:0;cursor:pointer}
 #chart.pick{cursor:pointer}
+.pos-chips{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 6px;font-size:.8rem}
+.pos-chips:empty{display:none}
+.pos-chip{border:1px solid var(--line);border-left-width:3px;background:transparent;border-radius:7px;padding:3px 9px;font-size:.8rem;color:var(--ink);white-space:nowrap}
+.pos-chip.long{border-left-color:var(--up)} .pos-chip.short{border-left-color:var(--down)}
+.pos-chip:hover{border-color:var(--muted)} .pos-chip.long:hover{border-left-color:var(--up)} .pos-chip.short:hover{border-left-color:var(--down)}
+.pos-chip.on{background:var(--sunk);border-top-color:var(--accent);border-right-color:var(--accent);border-bottom-color:var(--accent)}
+.pos-chip b{font-weight:600;margin-left:4px}
 
 /* ticket */
 .side{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px}
@@ -294,6 +301,7 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
           <button class="btn sm" id="newTrade" aria-controls="ticketDrawer" aria-expanded="false">New trade</button>
         </div>
         <div class="lvbar" id="lvbar"></div>
+        <div class="pos-chips" id="posChips"></div>
         <div class="chart-legend" id="chartLegend"></div>
         <div class="hint muted" id="chartMsg" style="font-size:.82rem;min-height:0"></div>
         <div id="chart"></div>
@@ -544,7 +552,7 @@ function initChart() {
   series = chart.addCandlestickSeries({upColor: css('--up'), downColor: css('--down'), wickUpColor: css('--up'),
     wickDownColor: css('--down'), borderVisible: false});
   chart.subscribeClick(chartClick);
-  chart.subscribeCrosshairMove(p => $('chart').classList.toggle('pick', String(p.hoveredObjectId || '').startsWith('t:')));
+  chart.subscribeCrosshairMove(p => $('chart').classList.toggle('pick', String(p.hoveredObjectId || '').startsWith('t:') || !!segAt(p.point)));
   $('chart').addEventListener('wheel', e => {
     if (!(e.ctrlKey || e.metaKey || e.altKey)) return;
     e.preventDefault();
@@ -663,7 +671,7 @@ async function loadCandles(fit) {
       // Open on the latest bars at a readable width; older ones are a drag away.
       fitRecent();
     }
-    candleKey = key; chartMsg(''); drawZones(d); drawMarkers();
+    candleKey = key; chartMsg(''); drawZones(d); drawLines();   // markers and position lines need the candles
   } catch (e) {
     if (key !== pair + tf) return;
     if (candleKey !== key) { series.setData([]); chartMsg('Could not load the chart. Trying again.'); }
@@ -722,21 +730,77 @@ function drawLines() {
       (mine(t) ? t.tps || [] : [tagVal(t, 'tp')]).forEach((v, i) => add(v, css('--up'), mine(t) ? 'TP' + (i + 1) : 'Target', 2, edit && {t, field: KEYS[i]}));
       add(t.liq || t.liquidation_price, css('--warn'), 'Liq', 1);
     } else add(t.close_rate, t.close_profit_abs > 0 ? css('--up') : css('--down'), 'Exit', 2);
-  } else {
-    const here = (S?.open || []).filter(x => x.pair === pair);
-    [[false, 'long'], [true, 'short']].forEach(([sh, word]) => {
-      const g = here.filter(x => !!x.is_short === sh); if (!g.length) return;
-      const w = g.map(x => x.amount || (x.notional && x.open_rate ? x.notional / x.open_rate : 0) || 1);
-      add(g.reduce((s, x, i) => s + x.open_rate * w[i], 0) / w.reduce((a, b) => a + b, 0), css('--accent'), `Avg ${word} ×${g.length}`, 0);
-    });
   }
   add(parseFloat($('sl').value), css('--down'), 'Stop (draft)', 3);
   ['tp', 'tp2', 'tp3'].forEach((k, i) => add(parseFloat($(k).value), css('--up'), `TP${i + 1} (draft)`, 3));
-  const html = t ? `<span><b>${esc(String(t.trade_id))}</b> · ${WHO[src(t)]} ${t.is_short ? 'short' : 'long'} from ${fp(t.open_rate)}${open ? '' : ' (closed)'}` +
-      `${open && mine(t) ? ' · drag its stop or a target to move it' : ''}</span><button type="button" data-unsel>Show all trades (Esc)</button>` :
-    `<span><span class="up">▲</span> long entry</span><span><span class="down">▼</span> short entry</span><span>● exit, with profit</span>` +
-    `<span>grey: lab bots</span><span><i class="band"></i>your nearest zones</span><span>Click a trade to see its stop and targets</span>`;
+  drawPositions(open ? String(t.trade_id) : null);
+  const pctOf = v => (v - t.open_rate) / t.open_rate * 100 * (t.is_short ? -1 : 1);
+  const lvl = (label, v) => v ? `${label} <b>${fp(v)}</b> <span class="${pctOf(v) >= 0 ? 'up' : 'down'}">${pctOf(v) >= 0 ? '+' : ''}${pctOf(v).toFixed(2)}%</span>` : '';
+  // Keep each target's own number: after TP1 has filled, the ones left are TP2 and TP3.
+  const tps = t && open ? (mine(t) ? (t.tps || []).map((v, i) => [v, 'TP' + (i + 1)]) : [[tagVal(t, 'tp'), 'Target']]).filter(([v]) => v) : [];
+  const html = t ? `<span>${WHO[src(t)]} ${t.is_short ? 'short' : 'long'} from <b>${fp(t.open_rate)}</b>${open ? '' : ' (closed)'}</span>` +
+      (open ? `<span>${lvl('Stop', t.stop_loss_abs)}</span>` + (tps.length ? tps.map(([v, label]) => `<span>${lvl(label, v)}</span>`).join('')
+        : `<span>${mine(t) ? 'No take profit' : 'Target: bot exit rule'}</span>`) : '') +
+      `${open && mine(t) ? '<span>drag the stop or a target to move it</span>' : ''}<button type="button" data-unsel>Hide (Esc)</button>` :
+    ((S?.open || []).some(x => x.pair === pair) ? '<span>Click a position (a chip above or its line on the chart) to see its stop and targets</span>' : '') +
+    `<span><span class="up">▲</span><span class="down">▼</span> entries</span><span>● exits, with profit</span><span>grey: lab bots</span><span><i class="band"></i>your nearest zones</span>`;
   if ($('chartLegend').innerHTML !== html) $('chartLegend').innerHTML = html;
+}
+/* Open positions on this coin: a line at each entry price from the candle it opened on to now, and a chip above the
+   chart. Clicking either selects the trade, which shows its stop and targets and shades its risk and reward. */
+let posSeries = [], rrSeries = null, segs = [];
+const rgba = (c, a) => { const h = String(c).replace('#', ''); if (!/^[0-9a-f]{6}$/i.test(h)) return c;
+  return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`; };
+function drawPositions(sel) {
+  if (!chart || !series) return;
+  const here = (S?.open || []).filter(t => t.pair === pair).sort((a, b) => a.open_timestamp - b.open_timestamp);
+  const ready = candleKey === pair + tf && chartBars.length > 1, last = ready ? chartBars[chartBars.length - 1].time : 0;
+  // These keep the normal autoscale, so every open entry, and the selected trade's stop and last target, stay in view.
+  const fit = {priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false};
+  while (posSeries.length < here.length) posSeries.push(chart.addLineSeries({lineWidth: 2, ...fit}));
+  if (!rrSeries) rrSeries = [0, 1].map(() => chart.addBaselineSeries({lineWidth: 1, topLineColor: 'transparent', bottomLineColor: 'transparent', ...fit}));
+  segs = [];
+  posSeries.forEach((s, i) => {
+    const t = here[i];
+    if (!t || !ready) return s.setData([]);
+    const b = barAt(Math.floor(t.open_timestamp / 1000)), from = b ? b.time : chartBars[0].time;   // opened before the loaded candles: start at the first
+    const id = String(t.trade_id), col = t.is_short ? css('--down') : css('--up');
+    s.applyOptions({color: sel && id !== sel ? rgba(col, .3) : col, lineWidth: id === sel ? 3 : 2});
+    s.setData(from < last ? [{time: from, value: t.open_rate}, {time: last, value: t.open_rate}] : []);
+    if (from < last) segs.push({id, from, to: last, price: t.open_rate});
+  });
+  const t = sel ? here.find(x => String(x.trade_id) === sel) : null, seg = t ? segs.find(g => g.id === sel) : null;
+  const tp = t ? (mine(t) ? (t.tps || []).filter(Boolean).at(-1) : tagVal(t, 'tp')) : null;
+  [[t?.stop_loss_abs, css('--down')], [tp, css('--up')]].forEach(([v, c], i) => {
+    const s = rrSeries[i];
+    if (!seg || !v) return s.setData([]);
+    const f = rgba(c, .14);
+    s.applyOptions({baseValue: {type: 'price', price: t.open_rate}, topFillColor1: f, topFillColor2: f, bottomFillColor1: f, bottomFillColor2: f});
+    s.setData([{time: seg.from, value: v}, {time: seg.to, value: v}]);
+  });
+  renderChips(here, sel);
+}
+function renderChips(here, sel) {
+  const box = $('posChips'), key = pair + '|' + (sel || '') + '|' + here.map(t => t.trade_id).join(',');
+  if (box.dataset.key !== key) {                         // rebuilt only when the set changes, so a click is never lost to a refresh
+    box.dataset.key = key;
+    box.innerHTML = !here.length ? '' : `<span class="muted">Open on ${esc(name(pair))}:</span>` + here.map(t => { const id = String(t.trade_id);
+      return `<button type="button" class="pos-chip ${t.is_short ? 'short' : 'long'}${id === sel ? ' on' : ''}" data-sel="${esc(id)}" aria-pressed="${id === sel}"
+        title="Show its stop and targets">${t.is_short ? '▼' : '▲'} ${WHO[src(t)]} ${fp(t.open_rate)}<b data-pnl="${esc(id)}"></b></button>`; }).join('');
+  }
+  here.forEach(t => { const el = box.querySelector(`[data-pnl="${CSS.escape(String(t.trade_id))}"]`);
+    if (el) { el.textContent = money(t.profit_abs); el.className = cls(t.profit_abs); } });
+}
+$('posChips').onclick = e => { const b = e.target.closest('[data-sel]'); if (b) selectTrade(b.dataset.sel === selTrade ? null : b.dataset.sel); };
+/* The position line under the pointer, if any. */
+function segAt(pt) {
+  if (!pt || !segs.length) return null;
+  const ts = chart.timeScale(), w = $('chart').clientWidth; let best = null, gap = 7;
+  segs.forEach(g => { const y = series.priceToCoordinate(g.price); if (y == null) return;
+    const x0 = ts.timeToCoordinate(g.from) ?? 0, x1 = ts.timeToCoordinate(g.to) ?? w;
+    if (pt.x < x0 - 4 || pt.x > x1 + 4) return;
+    const d = Math.abs(y - pt.y); if (d < gap) { gap = d; best = g; } });
+  return best;
 }
 /* Arrows where trades opened, circles where they closed, snapped to the candle that holds the time. */
 function barAt(sec) {
@@ -778,6 +842,8 @@ function chartClick(p) {
   if (drag || !p.point) return;
   const hid = String(p.hoveredObjectId || '');
   if (hid.startsWith('t:')) return selectTrade(hid.slice(2));
+  if (nearHandle(p.point.y)) return;                     // a click on the selected trade's stop or target keeps it selected
+  const g = segAt(p.point); if (g) return selectTrade(g.id);
   const ts = chart.timeScale(); let best = null, gap = Infinity;
   mkHits.forEach(m => {
     const x = ts.timeToCoordinate(m.time), y = series.priceToCoordinate(m.y); if (x == null || y == null) return;
