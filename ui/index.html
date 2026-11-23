@@ -204,7 +204,8 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
 .drawer-head h2{margin:0;flex:1;min-width:0}
 .x{border:1px solid var(--line);background:transparent;border-radius:8px;width:32px;height:32px;font-size:1.2rem;line-height:1;color:var(--muted);flex:0 0 auto}
 .x:hover{color:var(--ink);border-color:var(--muted)}
-@media (min-width:701px){body.drawer-open{padding-right:360px}}
+@media (min-width:1100px){body.drawer-open{padding-right:360px}}
+.toast{z-index:60}
 @media (max-width:700px){
   .top .status{order:5}
   .thead{flex-wrap:wrap} .seg{flex-wrap:wrap;max-width:100%}
@@ -1030,7 +1031,9 @@ function route() {
   document.title = VIEWS[v] + ' · Trading desk';
   if (v !== 'desk' && !$('ticketDrawer').hidden) closeDrawer();
   if (v === 'desk' && chart) chart.timeScale().fitContent();
-  if (jump) setTimeout(() => jumpTo(jump, true)); else if (route.v && route.v !== v) scrollTo(0, 0);
+  // On a cold load the tables above the target are still empty, so jump again once they have loaded, unless the page was scrolled since.
+  if (jump) { let n = 0, y = -1; const go = () => { if (n && scrollY !== y) return; jumpTo(jump, true); y = scrollY; if (++n < 5) setTimeout(go, 1000); }; setTimeout(go); }
+  else if (route.v && route.v !== v) scrollTo(0, 0);
   route.v = v;
 }
 $('resNav').onclick = e => { const id = e.target.dataset.jump; if (id) jumpTo(id); };
