@@ -1,0 +1,33 @@
+train | width 0.003 | all                  n=15904  avg -0.059 R  total   -930.9 R  win 33.8%  PF 0.9  longs -0.059  shorts -0.058  coins+ 0/6  reached {'tp1': 8020, 'tp2': 5368, 'tp3': 3640}
+                                            by coin {'BTC': -0.065, 'ETH': -0.056, 'SOL': -0.047, 'BNB': -0.079, 'XRP': -0.039, 'DOGE': -0.071}
+train | width 0.003 | with trend           n= 4764  avg -0.102 R  total   -483.7 R  win 32.4%  PF 0.84  longs -0.091  shorts -0.112  coins+ 0/6  reached {'tp1': 2332, 'tp2': 1543, 'tp3': 1009}
+                                            by coin {'BTC': -0.182, 'ETH': -0.146, 'SOL': -0.051, 'BNB': -0.125, 'XRP': -0.089, 'DOGE': -0.044}
+train | width 0.003 | against trend        n= 5107  avg -0.053 R  total   -269.1 R  win 33.9%  PF 0.91  longs -0.021  shorts -0.072  coins+ 2/6  reached {'tp1': 2603, 'tp2': 1729, 'tp3': 1189}
+                                            by coin {'BTC': -0.095, 'ETH': 0.024, 'SOL': -0.063, 'BNB': 0.007, 'XRP': -0.065, 'DOGE': -0.116}
+train | width 0.003 | neutral              n= 6421  avg -0.029 R  total   -188.3 R  win 34.8%  PF 0.95  longs -0.057  shorts -0.007  coins+ 2/6  reached {'tp1': 3282, 'tp2': 2234, 'tp3': 1527}
+                                            by coin {'BTC': 0.037, 'ETH': -0.051, 'SOL': -0.019, 'BNB': -0.104, 'XRP': 0.01, 'DOGE': -0.044}
+train | width atr | all                    n=15955  avg -0.051 R  total   -821.6 R  win 33.9%  PF 0.91  longs -0.056  shorts -0.048  coins+ 0/6  reached {'tp1': 8046, 'tp2': 5410, 'tp3': 3663}
+                                            by coin {'BTC': -0.075, 'ETH': -0.041, 'SOL': -0.045, 'BNB': -0.078, 'XRP': -0.023, 'DOGE': -0.053}
+train | width atr | with trend             n= 4756  avg -0.086 R  total   -408.7 R  win 32.5%  PF 0.86  longs -0.086  shorts -0.086  coins+ 0/6  reached {'tp1': 2353, 'tp2': 1547, 'tp3': 1040}
+                                            by coin {'BTC': -0.175, 'ETH': -0.171, 'SOL': -0.009, 'BNB': -0.096, 'XRP': -0.087, 'DOGE': -0.005}
+train | width atr | against trend          n= 5170  avg -0.060 R  total   -307.8 R  win 33.6%  PF 0.9  longs -0.025  shorts -0.08  coins+ 1/6  reached {'tp1': 2587, 'tp2': 1735, 'tp3': 1193}
+                                            by coin {'BTC': -0.12, 'ETH': 0.029, 'SOL': -0.099, 'BNB': -0.031, 'XRP': -0.011, 'DOGE': -0.124}
+train | width atr | neutral                n= 6445  avg -0.022 R  total   -142.2 R  win 35.1%  PF 0.96  longs -0.057  shorts 0.005  coins+ 2/6  reached {'tp1': 3313, 'tp2': 2262, 'tp3': 1519}
+                                            by coin {'BTC': 0.024, 'ETH': -0.008, 'SOL': -0.029, 'BNB': -0.095, 'XRP': 0.002, 'DOGE': -0.023}
+held back | width 0.003 | all              n= 7105  avg -0.033 R  total   -233.1 R  win 35.0%  PF 0.95  longs -0.076  shorts 0.001  coins+ 1/6  reached {'tp1': 3602, 'tp2': 2486, 'tp3': 1703}
+                                            by coin {'BTC': -0.091, 'ETH': -0.035, 'SOL': -0.043, 'BNB': -0.041, 'XRP': 0.003, 'DOGE': -0.005}
+held back | width 0.003 | with trend       n= 2178  avg +0.008 R  total    +18.2 R  win 36.3%  PF 1.01  longs -0.129  shorts 0.086  coins+ 3/6  reached {'tp1': 1149, 'tp2': 790, 'tp3': 553}
+                                            by coin {'BTC': -0.134, 'ETH': -0.04, 'SOL': -0.013, 'BNB': 0.041, 'XRP': 0.023, 'DOGE': 0.119}
+held back | width 0.003 | against trend    n= 2122  avg -0.043 R  total    -91.6 R  win 34.4%  PF 0.93  longs -0.02  shorts -0.067  coins+ 1/6  reached {'tp1': 1056, 'tp2': 731, 'tp3': 501}
+                                            by coin {'BTC': -0.029, 'ETH': -0.088, 'SOL': -0.054, 'BNB': -0.035, 'XRP': 0.069, 'DOGE': -0.089}
+held back | width 0.003 | neutral          n= 2964  avg -0.059 R  total   -175.1 R  win 34.3%  PF 0.9  longs -0.086  shorts -0.037  coins+ 1/6  reached {'tp1': 1482, 'tp2': 1017, 'tp3': 689}
+                                            by coin {'BTC': -0.108, 'ETH': 0.007, 'SOL': -0.054, 'BNB': -0.115, 'XRP': -0.055, 'DOGE': -0.036}
+held back | width atr | all                n= 7300  avg -0.044 R  total   -322.7 R  win 34.3%  PF 0.93  longs -0.108  shorts 0.006  coins+ 0/6  reached {'tp1': 3654, 'tp2': 2501, 'tp3': 1719}
+                                            by coin {'BTC': -0.09, 'ETH': -0.076, 'SOL': -0.075, 'BNB': -0.02, 'XRP': -0.005, 'DOGE': -0.002}
+held back | width atr | with trend         n= 2207  avg -0.002 R  total     -3.9 R  win 35.5%  PF 1.0  longs -0.139  shorts 0.075  coins+ 3/6  reached {'tp1': 1149, 'tp2': 784, 'tp3': 556}
+                                            by coin {'BTC': -0.164, 'ETH': -0.062, 'SOL': -0.118, 'BNB': 0.127, 'XRP': 0.032, 'DOGE': 0.149}
+held back | width atr | against trend      n= 2226  avg -0.056 R  total   -125.6 R  win 33.4%  PF 0.91  longs -0.068  shorts -0.043  coins+ 1/6  reached {'tp1': 1090, 'tp2': 744, 'tp3': 510}
+                                            by coin {'BTC': -0.056, 'ETH': -0.102, 'SOL': -0.037, 'BNB': -0.042, 'XRP': 0.023, 'DOGE': -0.103}
+held back | width atr | neutral            n= 3057  avg -0.059 R  total   -180.7 R  win 34.3%  PF 0.9  longs -0.113  shorts -0.015  coins+ 1/6  reached {'tp1': 1521, 'tp2': 1049, 'tp3': 703}
+                                            by coin {'BTC': -0.084, 'ETH': -0.061, 'SOL': -0.074, 'BNB': -0.103, 'XRP': -0.044, 'DOGE': 0.001}
+verdict: {'training_pass_by_width': {'0.003': False, 'atr': False}, 'training_pass': False, 'held_back_positive': None}
