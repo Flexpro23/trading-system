@@ -101,7 +101,12 @@ def pairs() -> list:
 
 
 # Coins only the scalp bot trades, to collect signals faster. The swing bot and the lab keep the six in config.json.
-SCALP_EXTRA = [f"{c}/USDT:USDT" for c in ("ADA", "AVAX", "LINK", "LTC", "SUI", "TRX", "DOT", "BCH")]
+SCALP_EXTRA = [f"{c}/USDT:USDT" for c in (
+    "ADA", "AVAX", "LINK", "LTC", "SUI", "TRX", "DOT", "BCH", "1000PEPE", "ZEC", "BLESS", "ORCA", "WIF", "PIEVERSE",
+    "MUBARAK", "COOKIE", "USELESS", "DASH", "VVV", "NEAR", "TRUMP", "TRB", "PEOPLE", "1000BONK", "HYPE", "BULLA", "TAO",
+    "COMP", "AR", "MAGMA", "STRK", "KOMA", "JTO", "BEAMX", "TLM", "WLD", "SIREN", "TRADOOR", "RIVER", "DODOX", "ZEREBRO",
+    "BOME", "RUNE", "KAS", "AAVE", "AVAAI", "COTI", "AKE", "ARIA", "INJ", "HBAR", "VELVET")]
+SCALP_MIN_VOL = 5e6         # the scalp bot skips coins with less 24h volume (USDT) than this; they are still charted
 
 
 def scalp_pairs() -> list:
@@ -112,7 +117,7 @@ def symbol(pair: str) -> str:
     return pair.split(":")[0].replace("/", "")
 
 
-_px = {"t": 0.0, "v": {}, "chg": {}, "chg_t": 0.0, "wait": {}}
+_px = {"t": 0.0, "v": {}, "chg": {}, "vol": {}, "chg_t": 0.0, "wait": {}}
 
 
 def _binance(path: str):
@@ -141,8 +146,9 @@ def prices() -> dict:
         if now - _px["chg_t"] > 60:
             _px["chg_t"] = now
             try:
-                _px["chg"].update({want[d["symbol"]]: float(d["priceChangePercent"])
-                                   for d in _binance("/fapi/v1/ticker/24hr") or [] if d.get("symbol") in want})
+                day = [d for d in _binance("/fapi/v1/ticker/24hr") or [] if d.get("symbol") in want]
+                _px["chg"].update({want[d["symbol"]]: float(d["priceChangePercent"]) for d in day})
+                _px["vol"].update({want[d["symbol"]]: float(d["quoteVolume"]) for d in day})
             except (KeyError, TypeError, ValueError, AttributeError):
                 pass
         try:
@@ -642,6 +648,7 @@ async def set_control(request: Request):
 
 
 _lv = {}
+_lv_calls = []
 
 
 @app.get("/api/levels")
@@ -649,9 +656,17 @@ def level_map(pair: str):
     """Your level method for one coin (ui/levels.py), cached for two minutes."""
     if pair not in scalp_pairs():
         raise HTTPException(400, "Unknown pair")
-    hit = _lv.get(pair)
-    if hit and time.time() - hit["updated"] < (120 if pair in pairs() else 900):   # scalp-only coins refresh less often
+    hit, now = _lv.get(pair), time.time()
+    if hit and now - hit["updated"] < (120 if pair in pairs() else 3600):   # scalp-only coins refresh hourly
         return hit
+    # One analysis asks Binance for about 45 weight of candles. At most 8 a minute, so 50 coins never burst
+    # past the rate limit; until a coin's turn comes its older levels are used.
+    _lv_calls[:] = [t for t in _lv_calls if now - t < 60]
+    if len(_lv_calls) >= 8:
+        if hit:
+            return hit
+        raise HTTPException(503, "Levels for this coin are queued; try again in a minute")
+    _lv_calls.append(now)
     try:
         _lv[pair] = levels.analyse(symbol(pair))
     except (requests.RequestException, ValueError, TypeError, IndexError, KeyError):
@@ -1014,18 +1029,27 @@ def s_scan(tf: str, c: dict, now: float, mine: list, n_open: int, tag: bool) -> 
             continue
         key = f"{pair} {tf}" if tag else pair
         say = lambda m: _scalp["pairs"].__setitem__(key, {"t": now, "msg": m})
+        vol = _px["vol"].get(pair)
+        if vol is None:
+            say("waiting for the 24h volume")
+            continue                                  # not marked as seen, so the next tick retries
+        if vol < SCALP_MIN_VOL:
+            _seen[(pair, tf)] = bar
+            say(f"not traded: 24h volume {vol / 1e6:.1f}M USDT is under {SCALP_MIN_VOL / 1e6:g}M")
+            continue
         if n_open >= c["scalp_max_trades"]:
             _seen[(pair, tf)] = bar
             say("waiting: the most trades allowed are open")
             continue
         try:
+            zones = level_map(pair)["zones"]          # first: while levels are queued, no candles are fetched
             rows = requests.get("https://fapi.binance.com/fapi/v1/klines", timeout=8,
                                 params={"symbol": symbol(pair), "interval": tf, "limit": 500}).json()
             rows = [(k[0] // 1000, float(k[1]), float(k[2]), float(k[3]), float(k[4]), float(k[5]), float(k[9]))
                     for k in rows if k[0] // 1000 < bar]
-            zones = level_map(pair)["zones"]
-        except (requests.RequestException, ValueError, TypeError, IndexError, KeyError, HTTPException):
-            say("could not load candles or levels; trying again")
+        except (requests.RequestException, ValueError, TypeError, IndexError, KeyError, HTTPException) as e:
+            say("waiting for its levels (8 coins are loaded a minute)" if getattr(e, "status_code", 0) == 503
+                else "could not load candles or levels; trying again")
             continue                                  # not marked as seen, so the next tick retries
         _seen[(pair, tf)] = bar
         if not rows or rows[-1][0] != bar - sec:

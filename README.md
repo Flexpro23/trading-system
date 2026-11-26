@@ -151,6 +151,7 @@ with no Claude session needed. On each closed 1m, 5m or 15m candle it checks eve
 (strength 2 or more, as drawn on the chart) followed by a delta signal: delta flip, absorption or delta divergence.
 It opens a paper trade in its own `scalp` account: stop one ATR beyond the zone, targets at 1R, 2R and 3R, stop to entry
 after the second target, several trades per coin allowed (not two in the same direction within 0.5% of each other), no time limit. At the third target the last third keeps running as a runner: stop at 2R in profit, then 1R behind each new whole R reached (exit reason `runner_stop`).
+It watches the six bot coins plus the coins in `SCALP_EXTRA` (56 in all), but skips any coin with less than 5M USDT of 24h volume (`SCALP_MIN_VOL`).
 It switches itself off after 200 closed trades if the total is negative. Settings are the `scalp_*` keys in control.json.
 In the backtest (docs/order-flow-test.md) none of these signals made money after fees on 5m or 15m. Paper only.
 
