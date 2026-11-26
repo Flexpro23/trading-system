@@ -180,7 +180,8 @@ def m_init():
             question text, context text, answer text, answered real)""")
         for col, typ in (("tp2", "real"), ("tp3", "real"), ("parent", "integer"), ("by", "text default 'you'"),
                          ("be", "integer default 0"),      # 1 = move the stop to entry after the first take profit, 2 = after the second
-                         ("tf", "text")):                  # candle size of the scalp signal that opened it
+                         ("tf", "text"),                   # candle size of the scalp signal that opened it
+                         ("run", "real")):                 # scalp runner: 1R in price once the third target has passed
             if col not in have:
                 c.execute(f"alter table pos add column {col} {typ}")
 
@@ -266,7 +267,7 @@ def m_hit(r, lo: float, hi: float):
     A range that touches a loss level and a target counts as the loss."""
     up = r["side"] == "long"
     liq = m_liq(r)
-    lv, why = (r["sl"], "stop_loss") if ((r["sl"] >= liq) if up else (r["sl"] <= liq)) else (liq, "liquidation")
+    lv, why = (r["sl"], "runner_stop" if r["run"] else "stop_loss") if ((r["sl"] >= liq) if up else (r["sl"] <= liq)) else (liq, "liquidation")
     if (up and lo <= lv) or (not up and hi >= lv):
         return lv, why, None
     for n, k in enumerate(SLOTS, 1):
@@ -285,11 +286,40 @@ def m_apply(pid: int, lo: float, hi: float, when: float = None) -> None:
         r = m_get(pid)
         hit = r and m_hit(r, lo, hi)
         if not hit:
-            return
+            break
         price, why, slot = hit
+        if slot == "tp3" and r["be"] == 2:
+            m_runner(pid, price)                    # the scalp bot keeps its last third running
+            return
         left = sum(1 for k in SLOTS if r[k])
         if not m_reduce(pid, price, why, 1.0 / left if slot else 1.0, when, slot) or not slot:
             return
+    r = m_get(pid)
+    if r and r["run"]:
+        m_trail(r, hi if r["side"] == "long" else lo)
+
+
+def m_runner(pid: int, price: float) -> None:
+    """Scalp bot, third target reached: the last third stays open with its stop at 2R in profit."""
+    with _mlock, mdb() as c:
+        r = c.execute("select * from pos where id=? and closed is null", (pid,)).fetchone()
+        if not r or r["tp3"] != price:
+            return
+        R = abs(price - r["entry"]) / 3
+        sl = r["entry"] + 2 * R if r["side"] == "long" else r["entry"] - 2 * R
+        c.execute("update pos set tp3=null, sl=?, run=? where id=?", (sl, R, pid))
+
+
+def m_trail(r, best: float) -> None:
+    """Runner stop: 1R below the highest whole R reached (above for a short), never lower than 2R and never moved back."""
+    up = r["side"] == "long"
+    n = int(abs(best - r["entry"]) / r["run"] + 1e-9) - 1
+    if n < 2 or (best < r["entry"] if up else best > r["entry"]):
+        return
+    sl = r["entry"] + n * r["run"] if up else r["entry"] - n * r["run"]
+    if (sl > r["sl"]) if up else (sl < r["sl"]):
+        with _mlock, mdb() as c:
+            c.execute("update pos set sl=? where id=? and closed is null", (sl, r["id"]))
 
 
 def m_tick():
@@ -374,7 +404,7 @@ def m_row(r, px: dict) -> dict:
             "profit_ratio": pnl / (r["qty"] * r["entry"] / r["lev"]), "notional": r["qty"] * r["entry"],
             "open_timestamp": r["opened"] * 1000, "close_timestamp": (r["closed"] or 0) * 1000,
             "is_open": is_open, "by": r["by"] or "you", "liq": m_liq(r), "lev": r["lev"], "part": r["parent"] is not None,
-            "tps": [r[k] for k in SLOTS] if is_open else [], "be": bool(r["be"]),
+            "tps": [r[k] for k in SLOTS] if is_open else [], "be": bool(r["be"]), "runner": bool(r["run"]) and is_open,
             "first_sl": m_first_sl(r) if is_open and r["parent"] is None else None}
 
 

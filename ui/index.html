@@ -387,7 +387,7 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
         <div class="field"><label for="scalpMax">Trades it may hold at once</label>
           <input type="number" id="scalpMax" step="1" min="1" max="100"></div>
         <div id="scalpPairs" style="font-size:.84rem"></div>
-        <p class="note">Paper money, in its own account. It trades zones of strength 2 or more, with the stop one ATR beyond the zone (signals with a stop nearer than 0.8% or farther than 3% are skipped), targets at 1, 2 and 3 times the risk, and the stop moved to entry after the second target. There is no time limit: a trade stays open until its stop or its last target is reached. In the backtest every one of these signals lost money after fees on 5m and 15m candles. It switches itself off after 200 closed trades if it is losing.</p>
+        <p class="note">Paper money, in its own account. It trades zones of strength 2 or more, with the stop one ATR beyond the zone (signals with a stop nearer than 0.8% or farther than 3% are skipped), targets at 1, 2 and 3 times the risk, and the stop moved to entry after the second target. At the third target the last third keeps running: its stop goes to 2R in profit, then follows 1R behind each new whole R reached. There is no time limit. In the backtest every one of these signals lost money after fees on 5m and 15m candles. It switches itself off after 200 closed trades if it is losing.</p>
       </section>
       <section class="panel">
         <h2>Daily limits</h2>
@@ -740,7 +740,7 @@ function drawLines() {
   const tps = t && open ? (mine(t) ? (t.tps || []).map((v, i) => [v, 'TP' + (i + 1)]) : [[tagVal(t, 'tp'), 'Target']]).filter(([v]) => v) : [];
   const html = t ? `<span>${WHO[src(t)]} ${t.is_short ? 'short' : 'long'} from <b>${fp(t.open_rate)}</b>${open ? '' : ' (closed)'}</span>` +
       (open ? `<span>${lvl('Stop', t.stop_loss_abs)}</span>` + (tps.length ? tps.map(([v, label]) => `<span>${lvl(label, v)}</span>`).join('')
-        : `<span>${mine(t) ? 'No take profit' : 'Target: bot exit rule'}</span>`) : '') +
+        : `<span>${t.runner ? 'Runner: the stop follows 1R behind each new whole R' : mine(t) ? 'No take profit' : 'Target: bot exit rule'}</span>`) : '') +
       `${open && mine(t) ? '<span>drag the stop or a target to move it</span>' : ''}<button type="button" data-unsel>Hide (Esc)</button>` :
     ((S?.open || []).some(x => x.pair === pair) ? '<span>Click a position (a chip above or its line on the chart) to see its stop and targets</span>' : '') +
     `<span><span class="up">▲</span><span class="down">▼</span> entries</span><span>● exits, with profit</span><span>grey: lab bots</span><span><i class="band"></i>your nearest zones</span>`;
@@ -1075,7 +1075,7 @@ function renderClosed() {
   renderHist();
   const rows = grp(histFilter);
   if (!rows.length) { $('closedBox').innerHTML = `<div class="empty">${coinScope === 'coin' ? 'Nothing closed on ' + esc(name(pair)) + ' among the recent trades.' : 'Nothing closed yet.'}</div>`; return; }
-  const why = r => ({exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss',
+  const why = r => ({exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss', runner_stop: 'Runner stop',
     force_exit: 'Closed by you', partial_close: 'Part closed by you', manual_take_profit: 'Take profit', take_profit: 'Take profit', take_profit_1: 'Take profit 1', take_profit_2: 'Take profit 2', take_profit_3: 'Take profit 3', time_exit: 'Time limit', daily_target: 'Daily target', daily_loss: 'Daily loss limit', liquidation: 'Liquidated'}[r] || r || '');
   $('closedBox').innerHTML = `<table><thead><tr><th>Coin</th><th>Opened by</th><th>Entry</th><th>Exit</th><th>Closed</th><th>Why</th><th>Profit</th></tr></thead><tbody>` +
     rows.slice(0, closedMax).map(t => `<tr>
@@ -1121,7 +1121,7 @@ function unitHints() {
 
 /* ---------- analysis ---------- */
 let A = null, anaFilter = 'all';
-const WHY = {exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss',
+const WHY = {exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss', runner_stop: 'Runner stop',
   force_exit: 'Closed by you', partial_close: 'Part closed', manual_take_profit: 'Take profit', take_profit: 'Take profit',
   take_profit_1: 'TP1', take_profit_2: 'TP2', take_profit_3: 'TP3', time_exit: 'Time limit', daily_target: 'Daily target', daily_loss: 'Daily loss limit', liquidation: 'Liquidated'};
 const dur = s => s < 3600 ? Math.round(s / 60) + ' min' : s < 172800 ? (s / 3600).toFixed(1) + ' h' : (s / 86400).toFixed(1) + ' days';
