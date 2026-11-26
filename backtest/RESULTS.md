@@ -60,6 +60,23 @@ The large result files (`backtest/out/*.pkl`) are not in git and are deleted aft
 | Long/short ratio (docs/long-short-ratio-test.md) | 24h crowd fade passed: PF 1.43 / 1.32 training, 1.15 held back | `reports/ls_report.txt`, `lab/ls.tsv` | `.venv/bin/python -I backtest/ls_bt.py > backtest/reports/ls_report.txt` |
 | Lab and intraday strategies | See README and docs/intraday-test-2.md | `lab/backtests.tsv`, `lab/intraday2.tsv` | `./bt.sh <Strategy> <timerange>` |
 
+## 6. Live scalp rules, with and without a trend filter (2026-11-26)
+
+- **Tested:** the scalp bot's live rules on 15m candles: flip trigger, zones of strength 2+, stop one ATR beyond the zone, signals skipped if the stop is under 0.8% or over 3% away, a third closed at 1R and 2R, stop to entry after 2R, last third as a runner (stop 2R, then 1R behind each new whole R), no time limit, the live overlap rule, fees and funding. Then the same trades split by the swing bot's 20-day momentum rule on closed 4h candles: with the trend, against it, or neutral. Filter and pass rule were fixed in the script's docstring before the first run.
+- **Result:** the filter failed on training, so the held-back numbers were not used to decide. The live rules themselves lose money.
+
+| Training 2022-07 to 2025-06 | Width 0.003 | Width ATR |
+|---|---|---|
+| All trades (the live bot) | 15,904 trades, -0.059 R, PF 0.90, 0 of 6 coins positive | 15,955, -0.051 R, PF 0.91, 0 of 6 |
+| With the trend (the filter) | 4,764, -0.102 R, PF 0.84, 0 of 6 | 4,756, -0.086 R, PF 0.86, 0 of 6 |
+| Against the trend | 5,107, -0.053 R | 5,170, -0.060 R |
+| Neutral | 6,421, -0.029 R | 6,445, -0.022 R |
+
+- **Held back 2025-07 to 2026-11 (printed, not used):** all trades -0.033 R and -0.044 R; with the trend +0.008 R and -0.002 R (about break-even, longs -0.13 R, shorts +0.08 R).
+- **Limits:** six coins with 1m taker-buy data, not the 58 the live bot watches; backtest zones, not the desk's exact zones; a stop raised inside a candle that closed beyond it fills at that close.
+- **Report:** `reports/scalp_trend_report.txt`, `reports/scalp_trend_report.json`.
+- **Regenerate:** `.venv/bin/python backtest/scalp_trend_bt.py` at commit `98ea193` (about 1 minute; no raw files). Data as in "Common to all groups", including `flow/` and the 1h funding rates.
+
 ## Rule for new backtests
 
 Reports go to `backtest/reports/` as small text, CSV or JSON files and are committed. Raw trade dumps go to `backtest/out/` only while a test runs; `backtest/run.sh` deletes them after the report unless `KEEP_RAW=1`. A re-run overwrites the earlier one. There is no `old/` folder.
