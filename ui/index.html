@@ -423,7 +423,9 @@ table.left th,table.left td{text-align:left;white-space:normal;vertical-align:to
     <section class="panel" style="margin-bottom:14px">
       <div class="thead"><h2>Accounts</h2><span class="spacer"></span><button class="btn ghost" id="balSave" style="display:none">Save starting balances</button></div>
       <div class="scroll" id="acctBox"><div class="empty">Loading</div></div>
-      <p class="note">Each account has its own paper balance and its own free margin; a trade is sized from, and limited by, the account that places it. Changing a starting balance moves that account's balance by the same amount and keeps its trade history. The swing bot's starting balance is set in user_data/config.json and needs a bot restart. Your quick desk tests count in your account. Daily limits still apply to all accounts together.</p>
+      <h2 style="margin:18px 0 10px">Record of each desk account</h2>
+      <div class="scroll" id="acctDeep"></div>
+      <p class="note">Each account has its own paper balance and its own free margin; a trade is sized from, and limited by, the account that places it. Changing a starting balance moves that account's balance by the same amount and keeps its trade history. The swing bot's starting balance is set in user_data/config.json and needs a bot restart. Your quick desk tests count in your account. Reset closes an account's open trades and starts it again from its starting balance; its record then counts from that moment, and the old trades stay in the history. Total profit is closed plus open profit; the deepest drop is the largest fall of the closed balance from its high. Daily limits still apply to all accounts together.</p>
     </section>
   </div>
 
@@ -1075,7 +1077,7 @@ function renderClosed() {
   renderHist();
   const rows = grp(histFilter);
   if (!rows.length) { $('closedBox').innerHTML = `<div class="empty">${coinScope === 'coin' ? 'Nothing closed on ' + esc(name(pair)) + ' among the recent trades.' : 'Nothing closed yet.'}</div>`; return; }
-  const why = r => ({exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss', runner_stop: 'Runner stop',
+  const why = r => ({exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss', runner_stop: 'Runner stop', account_reset: 'Account reset',
     force_exit: 'Closed by you', partial_close: 'Part closed by you', manual_take_profit: 'Take profit', take_profit: 'Take profit', take_profit_1: 'Take profit 1', take_profit_2: 'Take profit 2', take_profit_3: 'Take profit 3', time_exit: 'Time limit', daily_target: 'Daily target', daily_loss: 'Daily loss limit', liquidation: 'Liquidated'}[r] || r || '');
   $('closedBox').innerHTML = `<table><thead><tr><th>Coin</th><th>Opened by</th><th>Entry</th><th>Exit</th><th>Closed</th><th>Why</th><th>Profit</th></tr></thead><tbody>` +
     rows.slice(0, closedMax).map(t => `<tr>
@@ -1121,7 +1123,7 @@ function unitHints() {
 
 /* ---------- analysis ---------- */
 let A = null, anaFilter = 'all';
-const WHY = {exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss', runner_stop: 'Runner stop',
+const WHY = {exit_signal: 'Bot exit rule', stop_loss: 'Stop loss', stoploss_on_exchange: 'Stop loss', trailing_stop_loss: 'Stop loss', runner_stop: 'Runner stop', account_reset: 'Account reset',
   force_exit: 'Closed by you', partial_close: 'Part closed', manual_take_profit: 'Take profit', take_profit: 'Take profit',
   take_profit_1: 'TP1', take_profit_2: 'TP2', take_profit_3: 'TP3', time_exit: 'Time limit', daily_target: 'Daily target', daily_loss: 'Daily loss limit', liquidation: 'Liquidated'};
 const dur = s => s < 3600 ? Math.round(s / 60) + ' min' : s < 172800 ? (s / 3600).toFixed(1) + ' h' : (s / 86400).toFixed(1) + ' days';
@@ -1447,7 +1449,9 @@ function renderAccounts() {
   if (!S || !A || balDirty || !S.account?.accounts) return;
   const names = {bot: 'Swing bot', scalp: 'Scalp bot', you: 'You', ai: 'AI test'}, G = A.groups, acc = S.account.accounts;
   const open = k => (S.open || []).filter(t => src(t) === k).length;
-  const stat = k => { const g = [G[k], k === 'you' ? G.test : null].filter(Boolean), c = g.reduce((a, x) => a + x.closed, 0), w = g.reduce((a, x) => a + x.wins, 0);
+  const stat = k => { const d = acc[k].stats;               // desk accounts: since their last reset
+    if (d) return {closed: d.closed, won: d.win_pct == null ? '–' : Math.round(d.win_pct) + '%'};
+    const g = [G[k]].filter(Boolean), c = g.reduce((a, x) => a + x.closed, 0), w = g.reduce((a, x) => a + x.wins, 0);
     return {closed: c, won: c ? Math.round(w / c * 100) + '%' : '–'}; };
   const sum = f => Object.values(acc).reduce((a, x) => a + x[f], 0);
   const row = (label, a, st, n, input) => `<tr><td><b>${label}</b></td><td>${input || money(a.start, false)}</td>
@@ -1459,7 +1463,21 @@ function renderAccounts() {
   $('acctBox').innerHTML = `<table><thead><tr><th>Account</th><th>Starting balance</th><th>Closed profit</th><th>Open profit</th><th>Balance now</th><th>Margin in use</th><th>Free</th><th>Open trades</th><th>Closed positions</th><th>Won</th></tr></thead><tbody>` +
     ['bot', 'scalp', 'you', 'ai'].map(k => row(names[k], acc[k], stat(k), open(k), k === 'bot' ? '' : inp(k))).join('') +
     row('All accounts', all, {closed: '', won: ''}, (S.open || []).length) + '</tbody></table>';
+  const m = v => v == null ? '–' : money(v), day = t => t ? new Date(t * 1000).toLocaleString([], {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : 'the first trade';
+  $('acctDeep').innerHTML = `<table><thead><tr><th>Account</th><th>Counting since</th><th>Total profit</th><th>Return</th><th>Closed trades</th><th>Won / lost</th><th>Win rate</th><th>Profit factor</th><th>Average win</th><th>Average loss</th><th>Best</th><th>Worst</th><th>Fees paid</th><th>Deepest drop</th><th></th></tr></thead><tbody>` +
+    ['scalp', 'you', 'ai'].map(k => { const a = acc[k], d = a.stats, tot = a.realized + a.unrealized;
+      return `<tr><td><b>${names[k]}</b></td><td>${day(d.since)}</td><td class="${cls(tot)}"><b>${money(tot)}</b><span class="sub">${money(a.realized)} closed, ${money(a.unrealized)} open</span></td>
+        <td class="${cls(tot)}">${(tot / a.start * 100).toFixed(2)}%</td><td>${d.closed}</td><td>${d.won} / ${d.lost}</td><td>${d.win_pct == null ? '–' : d.win_pct.toFixed(0) + '%'}</td>
+        <td>${d.pf == null ? '–' : d.pf.toFixed(2)}</td><td class="up">${m(d.avg_win)}</td><td class="down">${m(d.avg_loss)}</td><td class="${cls(d.best)}">${m(d.best)}</td><td class="${cls(d.worst)}">${m(d.worst)}</td>
+        <td>${money(d.fees, false)}</td><td>${d.max_dd_pct ? '-' + d.max_dd_pct.toFixed(2) + '%' : '–'}</td>
+        <td><button class="btn ghost" data-reset="${k}">Reset</button></td></tr>`; }).join('') + '</tbody></table>';
 }
+$('acctDeep').addEventListener('click', async e => {
+  const k = e.target.dataset.reset; if (!k) return;
+  if (!confirm(`Reset the ${k === 'you' ? 'your' : k} account? Its open trades are closed at the current price and its balance starts again from its starting balance. Old trades stay in the history.`)) return;
+  try { const r = await post('/api/account/reset', {account: k}); toast(`Account reset, ${r.closed} trade${r.closed === 1 ? '' : 's'} closed`); await refresh(); }
+  catch (err) { toast(err.message, true); }
+});
 $('acctBox').addEventListener('input', e => { if (e.target.dataset.bal) { balDirty = true; $('balSave').style.display = ''; } });
 $('balSave').onclick = async () => {
   const v = k => document.querySelector(`[data-bal="${k}"]`).value;

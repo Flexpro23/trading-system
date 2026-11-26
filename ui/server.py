@@ -252,11 +252,20 @@ def m_close(pid: int, price: float, reason: str, when: float = None) -> bool:
     return m_reduce(pid, price, reason, 1.0, when)
 
 
+def m_since(by: str) -> float:
+    """When an account was last reset (0 if never). Its balance counts only trades closed after that."""
+    with mdb() as c:
+        r = c.execute("select v from meta where k=?", ("reset_" + by,)).fetchone()
+    return float(r[0]) if r else 0.0
+
+
 def m_totals(px: dict, by: str = None):
-    """Realized profit, open profit and margin in use of the desk's own trades: all of them, or one account's."""
+    """Realized profit, open profit and margin in use of the desk's own trades: all of them since the first trade
+    (what the daily limits see, so a reset never makes the day jump), or one account's since its last reset."""
     with mdb() as c:
         realized = c.execute("select coalesce(sum(pnl),0) from pos where closed is not null"
-                             + (" and coalesce(by,'you')=?" if by else ""), (by,) if by else ()).fetchone()[0]
+                             + (" and coalesce(by,'you')=? and closed>=?" if by else ""),
+                             (by, m_since(by)) if by else ()).fetchone()[0]
     unreal, margin = 0.0, 0.0
     for r in m_open():
         if by and (r["by"] or "you") != by:
@@ -414,6 +423,31 @@ def m_row(r, px: dict) -> dict:
             "first_sl": m_first_sl(r) if is_open and r["parent"] is None else None}
 
 
+def m_stats(by: str, start: float) -> dict:
+    """Closed-trade record of one desk account since its last reset. A trade is the position with its take-profit
+    pieces, counted once the whole position has closed."""
+    since = m_since(by)
+    with mdb() as c:
+        rows = c.execute("""select coalesce(p.parent, p.id) root, sum(p.pnl) pnl,
+                                   sum(? * p.qty * (p.entry + p.exit)) fee, max(p.closed) closed
+                            from pos p join pos r on r.id = coalesce(p.parent, p.id)
+                            where coalesce(r.by,'you')=? and r.closed is not null and r.closed>=?
+                            group by root order by closed""", (FEE, by, since)).fetchall()
+    pnl = [r["pnl"] for r in rows]
+    won, lost = [x for x in pnl if x > 0], [x for x in pnl if x <= 0]
+    eq, peak, dd = start, start, 0.0
+    for x in pnl:
+        eq += x
+        peak = max(peak, eq)
+        dd = max(dd, (peak - eq) / peak if peak else 0.0)
+    return {"since": since or None, "closed": len(pnl), "won": len(won), "lost": len(lost),
+            "win_pct": 100 * len(won) / len(pnl) if pnl else None,
+            "gross_win": sum(won), "gross_loss": sum(lost), "pf": sum(won) / -sum(lost) if lost and sum(lost) < 0 else None,
+            "avg_win": sum(won) / len(won) if won else None, "avg_loss": sum(lost) / len(lost) if lost else None,
+            "best": max(pnl) if pnl else None, "worst": min(pnl) if pnl else None,
+            "fees": sum(r["fee"] for r in rows), "max_dd_pct": 100 * dd}
+
+
 def account(px: dict) -> dict:
     """Separate paper accounts: the swing bot's wallet, yours, the AI test's and the scalp bot's. Each has its own starting
     balance, profit and free margin; none can use another's money."""
@@ -430,7 +464,8 @@ def account(px: dict) -> dict:
     acc = {"bot": {"start": wallet, "realized": bot_all - bot_open, "unrealized": bot_open, "used": bot_used}}
     for k in DESK_ACCOUNTS:
         realized, unreal, margin = m_totals(px, k)
-        acc[k] = {"start": float(c["balance_" + k]), "realized": realized, "unrealized": unreal, "used": margin}
+        acc[k] = {"start": float(c["balance_" + k]), "realized": realized, "unrealized": unreal, "used": margin,
+                  "stats": m_stats(k, float(c["balance_" + k]))}
     for a in acc.values():
         a["equity"] = a["start"] + a["realized"] + a["unrealized"]
         a["free"] = max(0.0, a["equity"] - a["used"])
@@ -610,6 +645,25 @@ async def odds(request: Request):
     return {"mc": mc, "hist": hist, "fee_r": fee_r, "days": round(len(a) / 288),
             "hours": 24, "reward_r": target_pct / stop_pct,
             "drift": float(a[-1][4] / a[0][4] - 1)}
+
+
+@app.post("/api/account/reset")
+def account_reset(b: dict):
+    """Close every open trade of one desk account at the current price and start its balance again from its starting
+    value. The old trades stay in the history; they no longer count in the account's balance or its record."""
+    k = b.get("account")
+    if k not in DESK_ACCOUNTS:
+        raise HTTPException(400, "account must be you, ai or scalp")
+    px, now, n = prices(), time.time(), 0
+    for r in m_open():
+        if (r["by"] or "you") == k:
+            p = px.get(r["pair"], {}).get("last")
+            if not p:
+                raise HTTPException(502, f"No price for {r['pair']}, so its trade cannot be closed; try again")
+            n += m_close(r["id"], p, "account_reset", now)
+    with mdb() as c:
+        c.execute("insert or replace into meta values (?, ?)", ("reset_" + k, str(now + 0.001)))
+    return {"ok": True, "closed": n}
 
 
 @app.post("/api/control")
@@ -1002,8 +1056,9 @@ def s_tick():
     mine = [r for r in m_open() if r["by"] == "scalp"]
     px = prices()
     with mdb() as db:
-        n, total = db.execute("select count(*), coalesce(sum(pnl),0) from pos where by='scalp' and closed is not null and parent is null").fetchone()
-        total = db.execute("select coalesce(sum(pnl),0) from pos where by='scalp' and closed is not null").fetchone()[0]
+        since = m_since("scalp")                     # the 200-trade test starts again after a reset
+        n = db.execute("select count(*) from pos where by='scalp' and closed>=? and parent is null", (since,)).fetchone()[0]
+        total = db.execute("select coalesce(sum(pnl),0) from pos where by='scalp' and closed>=?", (since,)).fetchone()[0]
     if n >= SCALP_STOP_AFTER and total < 0:
         write_control({**c, "scalp_on": False})
         _scalp.update(state="off", note=f"Switched itself off: {n} closed trades, {total:+.2f} USDT in total.")
